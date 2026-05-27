@@ -2,20 +2,19 @@ const Api = {
   async request(url, method = 'GET', body = null) {
     const headers = {};
     if (body) {
-        headers['Content-Type'] = 'application/json';
+      headers['Content-Type'] = 'application/json';
     }
     const options = {
-        method,
-        headers,
-        mode: 'cors'  // có thể bỏ dòng này vì 'cors' là mặc định với cross-origin
+      method,
+      headers,
+      mode: 'cors'
     };
     if (body) options.body = JSON.stringify(body);
-    
     const response = await fetch(url, options);
     const json = await response.json();
     if (!json.success) throw new Error(json.message || 'Lỗi không xác định');
     return json.data;
-}
+  },
 
   getLookup: () => Api.request(API.lookup()),
   getUseCase: (id) => Api.request(API.getUseCase(id)),

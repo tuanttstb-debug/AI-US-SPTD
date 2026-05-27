@@ -1,1 +1,14 @@
-
+.app-header {
+  background: var(--color-primary);
+  color: white;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  box-shadow: var(--shadow);
+}
+.app-container {
+  max-width: var(--max-width);
+  margin: 32px auto;
+  padding: 0 16px;
+}

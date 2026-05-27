@@ -1,377 +1,53 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-
-  <title>AI Use Case Package Manager</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Use Case Package Management</title>
   <!-- CSS -->
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/wizard.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
 </head>
-
 <body>
-
-  <!-- Mobile menu -->
-  <button
-    class="mobile-menu-btn"
-    onclick="toggleSidebar()"
-  >
-    ☰
-  </button>
-
-  <div id="app">
-
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-
-      <div class="sidebar-logo">
-        <div class="logo-mark">
-
-          <div class="logo-icon">
-            AI
-          </div>
-
-          <div>
-            <div class="logo-text">
-              AI Use Case
-            </div>
-
-            <div class="logo-sub">
-              Package Manager
-            </div>
-          </div>
-
-        </div>
+  <header class="app-header">
+    <div class="logo">🚀 Bình dân hóa AI</div>
+    <div class="header-title">Đăng ký AI Use Case</div>
+  </header>
+  <main class="app-container">
+    <div class="wizard">
+      <div class="progress-bar" id="progressBar"></div>
+      <div class="step-indicators" id="stepIndicators"></div>
+      <form id="useCaseForm" novalidate>
+        <!-- Steps injected by wizard.js -->
+      </form>
+      <div class="wizard-nav">
+        <button type="button" id="prevBtn" class="btn btn-outline" disabled>← Trước</button>
+        <button type="button" id="nextBtn" class="btn btn-primary">Tiếp →</button>
+        <button type="button" id="submitBtn" class="btn btn-success" style="display:none;">Gửi đăng ký</button>
       </div>
-
-      <nav class="sidebar-nav">
-
-        <div class="nav-section-label">
-          Navigation
-        </div>
-
-        <button
-          class="btn-nav active"
-          onclick="navigate('new')"
-          data-view="new"
-        >
-          <span class="nav-icon">📝</span>
-          New Use Case
-        </button>
-
-        <button
-          class="btn-nav"
-          onclick="navigate('dashboard')"
-          data-view="dashboard"
-        >
-          <span class="nav-icon">📊</span>
-          Dashboard
-        </button>
-
-        <button
-          class="btn-nav"
-          onclick="navigate('admin')"
-          data-view="admin"
-        >
-          <span class="nav-icon">⚙️</span>
-          Admin
-        </button>
-
-      </nav>
-
-      <div class="sidebar-footer">
-
-        <div class="user-chip">
-
-          <div class="user-avatar">
-            U
-          </div>
-
-          <div class="user-name" id="user-email">
-            guest@company.com
-          </div>
-
-        </div>
-
-      </div>
-
-    </aside>
-
-    <!-- Main -->
-    <main class="main-wrap">
-
-      <!-- Header -->
-      <header class="page-header">
-
-        <div>
-          <div class="page-title" id="page-title">
-            AI Use Case Manager
-          </div>
-
-          <div class="page-subtitle">
-            Banking AI Productivity Workspace
-          </div>
-        </div>
-
-        <div class="header-actions">
-
-          <button
-            class="btn btn-secondary btn-sm"
-            onclick="saveDraft()"
-          >
-            Save Draft
-          </button>
-
-        </div>
-
-      </header>
-
-      <!-- Content -->
-      <section id="main-content">
-
-        <!-- =========================
-             NEW USE CASE
-        ========================== -->
-
-        <div
-          id="view-new"
-          class="view active"
-        >
-
-          <div class="wizard-progress">
-
-            <div
-              class="progress-fill"
-              id="progress-fill"
-              style="width:25%"
-            ></div>
-
-          </div>
-
-          <div class="form-card">
-
-            <div class="form-card-title">
-              <span class="title-icon">
-                🧠
-              </span>
-
-              New AI Use Case
-            </div>
-
-            <div class="form-card-desc">
-              Create a new AI use case package
-            </div>
-
-            <form id="usecase-form">
-
-              <div class="form-group">
-                <label>
-                  Use Case Name
-                  <span class="req">*</span>
-                </label>
-
-                <input
-                  id="usecaseName"
-                  type="text"
-                  placeholder="Nhập tên use case"
-                />
-              </div>
-
-              <div class="form-row">
-
-                <div class="form-group">
-                  <label>Team</label>
-
-                  <select id="team">
-                    <option value="">
-                      Chọn team
-                    </option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label>Status</label>
-
-                  <select id="status">
-                    <option value="">
-                      Chọn trạng thái
-                    </option>
-                  </select>
-                </div>
-
-              </div>
-
-              <div class="form-group">
-                <label>
-                  Business Problem
-                </label>
-
-                <textarea
-                  id="businessProblem"
-                  placeholder="Mô tả vấn đề cần giải quyết"
-                ></textarea>
-              </div>
-
-              <div class="form-group">
-                <label>
-                  Prompt / Solution
-                </label>
-
-                <textarea
-                  id="prompt"
-                  placeholder="Prompt hoặc giải pháp AI"
-                ></textarea>
-              </div>
-
-              <div class="form-actions">
-
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  onclick="prevStep()"
-                >
-                  Previous
-                </button>
-
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  onclick="nextStep()"
-                >
-                  Next
-                </button>
-
-                <button
-                  type="button"
-                  class="btn btn-success"
-                  onclick="submitUseCase()"
-                >
-                  Submit
-                </button>
-
-              </div>
-
-            </form>
-
-          </div>
-
-        </div>
-
-        <!-- =========================
-             DASHBOARD
-        ========================== -->
-
-        <div
-          id="view-dashboard"
-          class="view"
-        >
-
-          <div class="dashboard-header">
-
-            <div class="dashboard-title">
-              Dashboard
-            </div>
-
-            <div class="dashboard-desc">
-              AI productivity metrics
-            </div>
-
-          </div>
-
-          <div
-            class="metrics-grid"
-            id="metrics-grid"
-          ></div>
-
-        </div>
-
-        <!-- =========================
-             ADMIN
-        ========================== -->
-
-        <div
-          id="view-admin"
-          class="view"
-        >
-
-          <div class="admin-section-header">
-
-            <div class="section-title">
-              Use Case List
-            </div>
-
-          </div>
-
-          <div class="search-bar">
-
-            <input
-              type="text"
-              placeholder="Search..."
-              oninput="searchUseCases(this.value)"
-            />
-
-          </div>
-
-          <table class="data-table">
-
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Team</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-
-            <tbody id="admin-table-body">
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </section>
-
-    </main>
-
-  </div>
-
-  <!-- Toast -->
-  <div
-    class="toast"
-    id="toast"
-  >
-    <span class="toast-icon">
-      ✓
-    </span>
-
-    <span id="toast-message">
-      Success
-    </span>
-  </div>
-
-  <!-- Loading -->
-  <div
-    class="loading-overlay"
-    id="loading"
-    style="display:none"
-  >
-
-    <div class="spinner"></div>
-
-    <div class="loading-text">
-      Loading...
     </div>
+    <div id="loadingOverlay" class="loading-overlay hidden">
+      <div class="spinner"></div>
+    </div>
+    <div id="toastContainer" class="toast-container"></div>
+  </main>
 
-  </div>
-
-  <!-- JS -->
-  <script src="./script.js"></script>
-
+  <!-- JS dependencies (order matters) -->
+  <script src="config/env.js"></script>
+  <script src="config/routes.js"></script>
+  <script src="assets/js/constants.js"></script>
+  <script src="assets/js/helpers.js"></script>
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/validation.js"></script>
+  <script src="assets/js/toast.js"></script>
+  <script src="assets/js/duplicate-check.js"></script>
+  <script src="assets/js/form-mapper.js"></script>
+  <script src="assets/js/wizard.js"></script>
+  <script src="assets/js/app.js"></script>
 </body>
 </html>

@@ -1,0 +1,405 @@
+<script>
+// Global state
+let currentStep = 1;
+const totalSteps = 4; // plus optional admin step
+let editMode = false;
+let editId = null;
+let isAdminUser = false;
+let formData = {};
+let lookupData = {};
+
+// Initialization
+document.addEventListener('DOMContentLoaded', async () => {
+  showLoading(true);
+  try {
+    lookupData = await google.script.run.withSuccessHandler(handleLookup).getLookupData();
+    const email = await google.script.run.withSuccessHandler(email => {
+      document.getElementById('userDisplay').innerText = email || 'Guest';
+      return email;
+    }).getUserEmail();
+    isAdminUser = await google.script.run.withSuccessHandler(r => r).isAdmin(email);
+    if (isAdminUser) {
+      document.querySelectorAll('.admin-only, .admin-step').forEach(el => el.style.display = '');
+    }
+    // Check for edit mode from URL
+    const params = new URLSearchParams(window.location.search);
+    const editParam = params.get('edit');
+    if (editParam) {
+      await loadForEdit(editParam);
+    } else {
+      checkAutosave();
+      resetForm();
+    }
+    populateDropdowns();
+    updateStepVisibility();
+    showLoading(false);
+  } catch(e) {
+    showToast('Lỗi khởi tạo: ' + e.message, 'error');
+    showLoading(false);
+  }
+});
+
+// Handlers
+function handleLookup(data) {
+  lookupData = data;
+}
+
+// Populate dropdowns and checkboxes
+function populateDropdowns() {
+  populateSelect('f_Team', lookupData['TEAM'] || []);
+  populateCheckboxGroup('f_User_Type', ['Cá nhân', 'Team', 'TT SPTD']);
+  populateCheckboxGroup('f_Expected_Goals', lookupData['GOAL'] || []);
+  populateCheckboxGroup('f_Input_Types', lookupData['INPUT_TYPE'] || ['Email','TLPT/BRD/FRD','Excel','Policy','Nội dung họp','Khác']);
+  populateCheckboxGroup('f_Reuse_Level', lookupData['REUSE'] || ['Cá nhân','Team khác','Toàn TT SPTD']);
+  if (isAdminUser) {
+    populateSelect('f_Status', lookupData['STATUS'] || ['Draft','Submitted','Reviewing','Approved','Rework','Archived']);
+    populateSelect('f_Current_Stage', lookupData['STAGE'] || ['S1 - Idea','S2 - Pilot','S3 - Standardized','S4 - Scale']);
+  }
+}
+
+function populateSelect(id, options) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Chọn --</option>';
+  options.forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt; o.textContent = opt;
+    sel.appendChild(o);
+  });
+}
+
+function populateCheckboxGroup(id, options) {
+  const container = document.getElementById(id);
+  if (!container) return;
+  container.innerHTML = '';
+  options.forEach(opt => {
+    const label = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = opt; cb.dataset.group = id;
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(' ' + opt));
+    container.appendChild(label);
+  });
+}
+
+// Navigation
+function nextStep() {
+  if (currentStep < totalSteps || (isAdminUser && currentStep < 5)) {
+    if (!validateStep(currentStep)) return;
+    currentStep++;
+    updateStepVisibility();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 1) {
+    currentStep--;
+    updateStepVisibility();
+  }
+}
+
+function updateStepVisibility() {
+  document.querySelectorAll('.form-step').forEach(el => {
+    el.style.display = el.dataset.step == currentStep ? '' : 'none';
+  });
+  document.querySelectorAll('.progress-steps .step').forEach(el => {
+    el.classList.toggle('active', el.dataset.step == currentStep);
+  });
+  const progress = (currentStep / (isAdminUser ? 5 : 4)) * 100;
+  document.querySelector('.progress-fill').style.width = progress + '%';
+  document.getElementById('prevBtn').disabled = currentStep === 1;
+  const maxStep = isAdminUser ? 5 : 4;
+  document.getElementById('nextBtn').style.display = currentStep < maxStep ? '' : 'none';
+  if (currentStep === maxStep) {
+    document.querySelector('.step-navigation').style.justifyContent = 'flex-start';
+  } else {
+    document.querySelector('.step-navigation').style.justifyContent = 'space-between';
+  }
+}
+
+function validateStep(step) {
+  // Basic required checks per step
+  if (step === 1) {
+    const name = document.getElementById('f_UseCase_Name').value.trim();
+    const owner = document.getElementById('f_Owner_Name').value.trim();
+    const email = document.getElementById('f_Owner_Email').value.trim();
+    const team = document.getElementById('f_Team').value;
+    if (!name) { alert('Vui lòng nhập Tên Use Case.'); return false; }
+    if (!owner) { alert('Vui lòng nhập Owner.'); return false; }
+    if (!email || !email.includes('@')) { alert('Email không hợp lệ.'); return false; }
+    if (!team) { alert('Vui lòng chọn Team.'); return false; }
+  }
+  if (step === 2) {
+    if (!document.getElementById('f_Flow_Description').value.trim()) {
+      alert('Vui lòng mô tả luồng AI.'); return false;
+    }
+  }
+  // Steps 3 & 4 no mandatory
+  return true;
+}
+
+// Autosave
+function autosave() {
+  const data = collectFormData();
+  localStorage.setItem('aiusecase_draft', JSON.stringify(data));
+}
+
+function checkAutosave() {
+  const saved = localStorage.getItem('aiusecase_draft');
+  if (saved && !editMode) {
+    try {
+      const data = JSON.parse(saved);
+      if (data.UseCase_Name || data.Owner_Name) {
+        if (confirm('Có dữ liệu nháp được lưu, bạn có muốn khôi phục?')) {
+          populateForm(data);
+        } else {
+          localStorage.removeItem('aiusecase_draft');
+        }
+      }
+    } catch(e) {}
+  }
+}
+
+// Attach autosave to all inputs
+document.addEventListener('input', function(e) {
+  if (e.target.closest('#useCaseForm')) autosave();
+});
+document.addEventListener('change', function(e) {
+  if (e.target.closest('#useCaseForm')) autosave();
+});
+
+// Collect form data
+function collectFormData() {
+  const data = {};
+  // Text inputs, textareas, selects
+  document.querySelectorAll('#useCaseForm input[type="text"], #useCaseForm input[type="email"], #useCaseForm input[type="number"], #useCaseForm input[type="url"], #useCaseForm input[type="date"], #useCaseForm textarea, #useCaseForm select').forEach(el => {
+    if (el.id && el.id.startsWith('f_')) {
+      const key = el.id.substring(2);
+      data[key] = el.value;
+    }
+  });
+  // Checkbox groups
+  ['User_Type', 'Expected_Goals', 'Input_Types', 'Reuse_Level'].forEach(suffix => {
+    const group = document.getElementById('f_' + suffix);
+    if (group) {
+      const checked = Array.from(group.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+      data[suffix] = checked;
+    }
+  });
+  // Radio demo status handled by hidden input already set
+  // Add edit fields
+  if (editMode) {
+    data.UseCase_ID = editId;
+  }
+  return data;
+}
+
+function populateForm(data) {
+  // Set all fields
+  Object.keys(data).forEach(key => {
+    const el = document.getElementById('f_' + key);
+    if (el) {
+      if (el.type === 'checkbox' || el.type === 'radio') {
+        // handled separately
+      } else {
+        el.value = data[key] || '';
+      }
+    }
+  });
+  // Checkbox groups
+  ['User_Type','Expected_Goals','Input_Types','Reuse_Level'].forEach(suffix => {
+    const group = document.getElementById('f_' + suffix);
+    if (group && data[suffix]) {
+      const values = Array.isArray(data[suffix]) ? data[suffix] : data[suffix].split(',').map(s=>s.trim());
+      group.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = values.includes(cb.value);
+      });
+    }
+  });
+  // Demo radio
+  if (data.Demo_Status) {
+    const radios = document.getElementsByName('demoStatus');
+    radios.forEach(r => { if (r.value === data.Demo_Status) r.checked = true; });
+    document.getElementById('f_Demo_Status').value = data.Demo_Status;
+  }
+}
+
+// Duplicate check
+async function checkDuplicates() {
+  const name = document.getElementById('f_UseCase_Name').value.trim();
+  const warningDiv = document.getElementById('duplicate-warning');
+  if (!name || name.length < 3) { warningDiv.style.display = 'none'; return; }
+  try {
+    const dups = await google.script.run.withSuccessHandler(dupList => {
+      if (dupList.length > 0) {
+        let html = '<strong>Có thể trùng với:</strong><ul>';
+        dupList.forEach(d => html += `<li>${d.name} (${(d.similarity*100).toFixed(0)}% tương đồng)</li>`);
+        html += '</ul>';
+        warningDiv.innerHTML = html;
+        warningDiv.style.display = 'block';
+      } else {
+        warningDiv.style.display = 'none';
+      }
+    }).checkDuplicate(name, editId || '');
+  } catch(e) { console.error(e); }
+}
+
+// Submit
+function submitForm(statusAction) {
+  const data = collectFormData();
+  // Determine mode
+  const mode = editMode ? 'edit' : 'create';
+  if (statusAction === 'Submitted') {
+    data.Status = 'Submitted';
+    data.Submit_Date = new Date().toISOString();
+  } else if (statusAction === 'adminUpdate') {
+    // admin update keeps existing status unless changed
+    // data.Status already set from form if admin changed it
+  } else {
+    // Draft
+    data.Status = 'Draft';
+  }
+  // Validate required fields for submission
+  if (statusAction !== 'adminUpdate') {
+    if (!data.UseCase_Name || !data.Owner_Name || !data.Owner_Email) {
+      showToast('Thiếu thông tin bắt buộc.', 'error'); return;
+    }
+  }
+  showLoading(true);
+  google.script.run.withSuccessHandler(result => {
+    showLoading(false);
+    if (result.success) {
+      showToast(editMode ? 'Đã cập nhật!' : 'Đã gửi thành công! ID: ' + result.id, 'success');
+      localStorage.removeItem('aiusecase_draft');
+      if (!editMode) {
+        resetForm();
+        navigate('new');
+        // Optionally redirect to edit view for the new item
+      } else {
+        editMode = true; editId = result.id;
+        updateEditBanner();
+      }
+    } else {
+      showToast('Lỗi: ' + result.error, 'error');
+    }
+  }).withFailureHandler(err => {
+    showLoading(false); showToast('Lỗi kết nối: ' + err.message, 'error');
+  }).submitUseCase(data, mode);
+}
+
+function saveDraft() {
+  submitForm('Draft');
+}
+
+// Load for edit
+async function loadForEdit(id) {
+  showLoading(true);
+  try {
+    const record = await google.script.run.withSuccessHandler(r => r).loadUseCase(id);
+    if (record) {
+      populateForm(record);
+      editMode = true;
+      editId = id;
+      updateEditBanner();
+      // Show admin step if admin
+      if (isAdminUser) {
+        document.querySelectorAll('.admin-step').forEach(el => el.style.display = '');
+      }
+      currentStep = 1;
+      updateStepVisibility();
+      localStorage.removeItem('aiusecase_draft');
+    } else {
+      showToast('Không tìm thấy use case.', 'error');
+    }
+  } catch(e) {
+    showToast('Lỗi load: ' + e.message, 'error');
+  }
+  showLoading(false);
+}
+
+function updateEditBanner() {
+  const banner = document.getElementById('edit-banner');
+  banner.style.display = 'block';
+  banner.innerHTML = `✏️ Đang chỉnh sửa: <strong>${editId}</strong> (Phiên bản sẽ tăng)`;
+}
+
+function resetForm() {
+  document.getElementById('useCaseForm').reset();
+  editMode = false; editId = null;
+  document.getElementById('edit-banner').style.display = 'none';
+  document.querySelectorAll('.admin-step').forEach(el => el.style.display = isAdminUser ? '' : 'none');
+  currentStep = 1;
+  updateStepVisibility();
+}
+
+// Navigation views
+function navigate(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
+  if (view === 'new') {
+    document.getElementById('view-wizard').classList.add('active');
+    document.getElementById('nav-new').classList.add('active');
+    if (!editMode) resetForm();
+  } else if (view === 'dashboard') {
+    document.getElementById('view-dashboard').classList.add('active');
+    document.getElementById('nav-dashboard').classList.add('active');
+    loadDashboard();
+  } else if (view === 'admin' && isAdminUser) {
+    document.getElementById('view-admin').classList.add('active');
+    document.getElementById('nav-admin').classList.add('active');
+    renderAdminList();
+  }
+}
+
+// Dashboard
+async function loadDashboard() {
+  showLoading(true);
+  try {
+    const metrics = await google.script.run.withSuccessHandler(r => r).getDashboardMetrics();
+    const container = document.getElementById('dashboard-metrics');
+    container.innerHTML = `
+      <div class="metric-card"><div class="metric-value">${metrics.total}</div><div class="metric-label">Tổng Use Cases</div></div>
+      <div class="metric-card"><div class="metric-value">${metrics.totalHoursSaved}</div><div class="metric-label">Giờ tiết kiệm/tháng</div></div>
+      <div class="metric-card"><div class="metric-value">${metrics.approvedCount}</div><div class="metric-label">Đã duyệt</div></div>
+      <div class="metric-card"><div class="metric-value">${metrics.reuseRate}%</div><div class="metric-label">Tỉ lệ tái sử dụng</div></div>
+      <div class="metric-card"><div class="metric-value">${metrics.aiDayCount}</div><div class="metric-label">AI Day tham gia</div></div>
+    `;
+  } catch(e) { showToast('Lỗi dashboard: ' + e.message, 'error'); }
+  showLoading(false);
+}
+
+// Admin list
+async function renderAdminList() {
+  // Load all use cases from server via a function we'll add
+  showLoading(true);
+  try {
+    // We'll implement getAllUseCases() in Code.gs
+    const cases = await google.script.run.withSuccessHandler(r => r).getAllUseCases();
+    const search = document.getElementById('adminSearch')?.value.toLowerCase() || '';
+    const filtered = cases.filter(c => !search || (c.UseCase_Name?.toLowerCase().includes(search) || c.UseCase_ID?.toLowerCase().includes(search)));
+    let html = '<table><tr><th>ID</th><th>Tên</th><th>Team</th><th>Status</th><th></th></tr>';
+    filtered.forEach(c => {
+      html += `<tr>
+        <td>${c.UseCase_ID}</td><td>${c.UseCase_Name}</td><td>${c.Team}</td><td>${c.Status}</td>
+        <td><a href="?edit=${c.UseCase_ID}" class="btn btn-outline">Edit</a></td>
+      </tr>`;
+    });
+    html += '</table>';
+    document.getElementById('admin-list').innerHTML = html || '<p>Không có dữ liệu.</p>';
+  } catch(e) { showToast('Lỗi: '+e.message,'error'); }
+  showLoading(false);
+}
+
+// Utility
+function showToast(msg, type='') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg; toast.className = 'toast ' + type + ' show';
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+function showLoading(show) {
+  document.getElementById('loading').style.display = show ? 'flex' : 'none';
+}
+function toggleCollapse(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>

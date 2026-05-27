@@ -1,4 +1,3 @@
-<script>
 // ============================================================
 //  AI Use Case Package Manager — script.html
 //  Fixes: step sync, dropdown-then-populate order, demo radio,
@@ -727,4 +726,3 @@ document.addEventListener('click', function (e) {
     sidebar.classList.remove('open');
   }
 });
-</script>

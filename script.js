@@ -1,131 +1,81 @@
-/* =====================================================
-   AI USE CASE MANAGER - STATIC WEB VERSION
-===================================================== */
+/* ==========================================
+   AI USE CASE MANAGER — STATIC VERSION
+   Apps Script → Static Web Migration
+========================================== */
 
+let currentView = 'new';
 let currentStep = 1;
-let totalSteps = 5;
-
-let lookupData = {};
 let isAdminUser = true;
+let lookupData = {};
 
-let currentEditId = null;
+const STORAGE_KEY = 'ai_usecases';
+const DRAFT_KEY = 'ai_usecase_draft';
 
-/* =====================================================
-   MOCK API LAYER
-===================================================== */
+/* ==========================================
+   MOCK API
+========================================== */
 
 const API = {
 
   async getLookupData() {
-
     return {
-
       TEAM: [
         'BA',
         'CA',
         'PM',
         'Product',
-        'IT',
-        'Risk'
-      ],
-
-      GOAL: [
-        'Giảm thời gian xử lý',
-        'Chuẩn hóa output',
-        'Giảm lỗi nghiệp vụ',
-        'Tăng năng suất',
-        'Tăng tốc review'
-      ],
-
-      INPUT_TYPE: [
-        'Email',
-        'Excel',
-        'BRD',
-        'FRD',
-        'User Story',
-        'Policy',
-        'PDF'
-      ],
-
-      REUSE: [
-        'Cá nhân',
-        'Trong team',
-        'Toàn trung tâm'
+        'Data',
+        'Operation'
       ],
 
       STATUS: [
         'Draft',
         'Submitted',
         'Reviewing',
-        'Approved'
-      ],
-
-      STAGE: [
-        'S1 - Idea',
-        'S2 - Pilot',
-        'S3 - Standardized'
+        'Approved',
+        'Rework',
+        'Archived'
       ]
     };
   },
 
   async getUserEmail() {
-    return 'demo.user@company.com';
+    return 'guest@company.com';
   },
 
   async isAdmin() {
     return true;
   },
 
-  async checkDuplicate(name, excludeId = '') {
-
-    const data =
-      JSON.parse(
-        localStorage.getItem('usecases') || '[]'
-      );
-
-    return data.filter(
-      x =>
-        x.UseCaseName &&
-        x.UseCaseName.toLowerCase() === name.toLowerCase() &&
-        x.UseCase_ID !== excludeId
+  async getAllUseCases() {
+    return JSON.parse(
+      localStorage.getItem(STORAGE_KEY) || '[]'
     );
   },
 
-  async submitUseCase(data, mode = 'create') {
+  async submitUseCase(data) {
 
-    let usecases =
-      JSON.parse(
-        localStorage.getItem('usecases') || '[]'
-      );
+    const list =
+      await this.getAllUseCases();
 
-    if (!data.UseCase_ID) {
+    const index = list.length + 1;
 
-      data.UseCase_ID =
-        'AIUS-' +
-        String(usecases.length + 1)
-          .padStart(4, '0');
-    }
+    data.UseCase_ID =
+      'AIUS-' +
+      String(index).padStart(4, '0');
 
-    data.updatedAt =
+    data.createdAt =
       new Date().toISOString();
 
-    if (mode === 'edit') {
-
-      usecases =
-        usecases.map(x =>
-          x.UseCase_ID === data.UseCase_ID
-            ? data
-            : x
-        );
-
-    } else {
-
-      usecases.push(data);
-    }
+    list.push(data);
 
     localStorage.setItem(
-      'usecases',
-      JSON.stringify(usecases)
+      STORAGE_KEY,
+      JSON.stringify(list)
+    );
+
+    localStorage.removeItem(
+      DRAFT_KEY
     );
 
     return {
@@ -134,102 +84,84 @@ const API = {
     };
   },
 
-  async getAllUseCases() {
-
-    return JSON.parse(
-      localStorage.getItem('usecases') || '[]'
-    );
-  },
-
   async getDashboardMetrics() {
 
-    const data =
-      JSON.parse(
-        localStorage.getItem('usecases') || '[]'
-      );
+    const list =
+      await this.getAllUseCases();
 
     return {
-
-      total: data.length,
+      total: list.length,
 
       approvedCount:
-        data.filter(
-          x => x.Status === 'Approved'
+        list.filter(
+          x => x.status === 'Approved'
         ).length,
 
-      totalHoursSaved: 120,
+      draftCount:
+        list.filter(
+          x => x.status === 'Draft'
+        ).length,
 
-      reuseRate: 68,
-
-      aiDayCount: 12,
-
-      byTeam: {},
-
-      stageCount: {}
+      reviewingCount:
+        list.filter(
+          x => x.status === 'Reviewing'
+        ).length
     };
   }
 };
 
-/* =====================================================
+/* ==========================================
    INIT
-===================================================== */
+========================================== */
 
 document.addEventListener(
   'DOMContentLoaded',
-  async function () {
+  async () => {
 
-    try {
+    showLoading(true);
 
-      showLoading(true);
+    lookupData =
+      await API.getLookupData();
 
-      lookupData =
-        await API.getLookupData();
+    const email =
+      await API.getUserEmail();
 
-      populateDropdowns();
+    isAdminUser =
+      await API.isAdmin();
 
-      renderProgressSteps();
+    document.getElementById(
+      'user-email'
+    ).textContent = email;
 
-      updateStepVisibility();
+    populateDropdowns();
 
-      renderDashboard();
+    loadDraft();
 
-      loadAdminTable();
+    renderDashboard();
 
-      checkAutosave();
-
-      showToast(
-        'Static web initialized',
-        'success'
-      );
-
-    } catch (err) {
-
-      console.error(err);
-
-      showToast(
-        'Init failed',
-        'error'
-      );
-    }
+    renderAdminTable();
 
     showLoading(false);
-});
+  }
+);
 
-/* =====================================================
+/* ==========================================
    NAVIGATION
-===================================================== */
+========================================== */
 
-function navigate(viewName) {
+function navigate(view) {
+
+  currentView = view;
 
   document
     .querySelectorAll('.view')
-    .forEach(v =>
-      v.classList.remove('active')
-    );
+    .forEach(el => {
+      el.classList.remove('active');
+    });
 
   const target =
     document.getElementById(
-      `${viewName}-view`
+      `view-${view}`
     );
 
   if (target) {
@@ -238,179 +170,286 @@ function navigate(viewName) {
 
   document
     .querySelectorAll('.btn-nav')
-    .forEach(btn =>
-      btn.classList.remove('active')
-    );
+    .forEach(btn => {
+
+      btn.classList.remove('active');
+
+      if (
+        btn.dataset.view === view
+      ) {
+        btn.classList.add(
+          'active'
+        );
+      }
+    });
+
+  if (view === 'dashboard') {
+    renderDashboard();
+  }
+
+  if (view === 'admin') {
+    renderAdminTable();
+  }
 }
+
+/* ==========================================
+   SIDEBAR
+========================================== */
 
 function toggleSidebar() {
 
-  const sidebar =
-    document.querySelector('.sidebar');
-
-  sidebar.classList.toggle('open');
-}
-
-/* =====================================================
-   STEP WIZARD
-===================================================== */
-
-function nextStep() {
-
-  if (currentStep < totalSteps) {
-
-    currentStep++;
-
-    renderProgressSteps();
-
-    updateStepVisibility();
-  }
-}
-
-function prevStep() {
-
-  if (currentStep > 1) {
-
-    currentStep--;
-
-    renderProgressSteps();
-
-    updateStepVisibility();
-  }
-}
-
-function updateStepVisibility() {
-
   document
-    .querySelectorAll('.step-content')
-    .forEach(el =>
-      el.style.display = 'none'
-    );
-
-  const current =
-    document.getElementById(
-      `step-${currentStep}`
-    );
-
-  if (current) {
-    current.style.display = 'block';
-  }
+    .getElementById('sidebar')
+    .classList.toggle('open');
 }
 
-function renderProgressSteps() {
-
-  const fill =
-    document.querySelector('.progress-fill');
-
-  if (fill) {
-
-    fill.style.width =
-      ((currentStep - 1) / (totalSteps - 1)) * 100 + '%';
-  }
-}
-
-/* =====================================================
+/* ==========================================
    FORM
-===================================================== */
+========================================== */
+
+function populateDropdowns() {
+
+  const team =
+    document.getElementById(
+      'team'
+    );
+
+  const status =
+    document.getElementById(
+      'status'
+    );
+
+  lookupData.TEAM.forEach(x => {
+
+    const option =
+      document.createElement(
+        'option'
+      );
+
+    option.value = x;
+    option.textContent = x;
+
+    team.appendChild(option);
+  });
+
+  lookupData.STATUS.forEach(x => {
+
+    const option =
+      document.createElement(
+        'option'
+      );
+
+    option.value = x;
+    option.textContent = x;
+
+    status.appendChild(option);
+  });
+}
 
 function getFormData() {
 
-  const form =
-    document.querySelector('form');
+  return {
+    usecaseName:
+      document.getElementById(
+        'usecaseName'
+      ).value,
 
-  if (!form) return {};
+    team:
+      document.getElementById(
+        'team'
+      ).value,
 
-  const formData =
-    new FormData(form);
+    status:
+      document.getElementById(
+        'status'
+      ).value,
 
-  const data = {};
+    businessProblem:
+      document.getElementById(
+        'businessProblem'
+      ).value,
 
-  formData.forEach((v, k) => {
-    data[k] = v;
-  });
-
-  return data;
+    prompt:
+      document.getElementById(
+        'prompt'
+      ).value
+  };
 }
 
-async function submitForm(mode = 'create') {
+function fillForm(data) {
 
-  try {
+  if (!data) return;
 
-    showLoading(true);
+  document.getElementById(
+    'usecaseName'
+  ).value =
+    data.usecaseName || '';
 
-    const data =
-      getFormData();
+  document.getElementById(
+    'team'
+  ).value =
+    data.team || '';
 
-    const result =
-      await API.submitUseCase(
-        data,
-        mode
-      );
+  document.getElementById(
+    'status'
+  ).value =
+    data.status || '';
 
-    showToast(
-      `Saved ${result.id}`,
-      'success'
+  document.getElementById(
+    'businessProblem'
+  ).value =
+    data.businessProblem || '';
+
+  document.getElementById(
+    'prompt'
+  ).value =
+    data.prompt || '';
+}
+
+/* ==========================================
+   DRAFT
+========================================== */
+
+function saveDraft() {
+
+  const data =
+    getFormData();
+
+  localStorage.setItem(
+    DRAFT_KEY,
+    JSON.stringify(data)
+  );
+
+  showToast(
+    'Draft saved',
+    'success'
+  );
+}
+
+function loadDraft() {
+
+  const draft =
+    localStorage.getItem(
+      DRAFT_KEY
     );
 
-    renderDashboard();
+  if (!draft) return;
 
-    loadAdminTable();
+  fillForm(
+    JSON.parse(draft)
+  );
+}
 
-  } catch (err) {
+/* ==========================================
+   SUBMIT
+========================================== */
 
-    console.error(err);
+async function submitUseCase() {
 
+  const data =
+    getFormData();
+
+  if (
+    !data.usecaseName
+  ) {
     showToast(
-      'Save failed',
+      'Use case name is required',
       'error'
     );
+
+    return;
   }
 
+  showLoading(true);
+
+  const result =
+    await API.submitUseCase(
+      data
+    );
+
   showLoading(false);
+
+  if (result.success) {
+
+    document
+      .getElementById(
+        'usecase-form'
+      )
+      .reset();
+
+    renderDashboard();
+    renderAdminTable();
+
+    showToast(
+      `Submitted ${result.id}`,
+      'success'
+    );
+  }
 }
 
-/* =====================================================
+/* ==========================================
    DASHBOARD
-===================================================== */
+========================================== */
 
 async function renderDashboard() {
 
   const metrics =
-    await API.getDashboardMetrics();
+    await API
+      .getDashboardMetrics();
 
-  setMetric(
-    'metric-total',
-    metrics.total
-  );
+  const grid =
+    document.getElementById(
+      'metrics-grid'
+    );
 
-  setMetric(
-    'metric-approved',
-    metrics.approvedCount
-  );
+  if (!grid) return;
 
-  setMetric(
-    'metric-hours',
-    metrics.totalHoursSaved
-  );
+  grid.innerHTML = `
+    <div class="metric-card">
+      <div class="metric-value">
+        ${metrics.total}
+      </div>
+      <div class="metric-label">
+        Total
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-value">
+        ${metrics.approvedCount}
+      </div>
+      <div class="metric-label">
+        Approved
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-value">
+        ${metrics.reviewingCount}
+      </div>
+      <div class="metric-label">
+        Reviewing
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-value">
+        ${metrics.draftCount}
+      </div>
+      <div class="metric-label">
+        Draft
+      </div>
+    </div>
+  `;
 }
 
-function setMetric(id, value) {
-
-  const el =
-    document.getElementById(id);
-
-  if (el) {
-    el.innerText = value;
-  }
-}
-
-/* =====================================================
+/* ==========================================
    ADMIN TABLE
-===================================================== */
+========================================== */
 
-async function loadAdminTable() {
+async function renderAdminTable() {
 
-  const data =
+  const list =
     await API.getAllUseCases();
 
   const tbody =
@@ -422,145 +461,144 @@ async function loadAdminTable() {
 
   tbody.innerHTML = '';
 
-  data.forEach(item => {
+  list.forEach(item => {
 
-    const tr =
-      document.createElement('tr');
+    tbody.innerHTML += `
+      <tr>
+        <td>
+          ${item.UseCase_ID}
+        </td>
 
-    tr.innerHTML = `
-      <td>${item.UseCase_ID || ''}</td>
-      <td>${item.UseCaseName || ''}</td>
-      <td>${item.Status || 'Draft'}</td>
-      <td>
-        <button
-          class="btn btn-sm btn-primary"
-          onclick="editUseCase('${item.UseCase_ID}')"
-        >
-          Edit
-        </button>
-      </td>
+        <td>
+          ${item.usecaseName}
+        </td>
+
+        <td>
+          ${item.team}
+        </td>
+
+        <td>
+          ${item.status}
+        </td>
+
+        <td>
+          <button
+            class="btn btn-sm btn-danger"
+            onclick="deleteUseCase('${item.UseCase_ID}')"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
     `;
-
-    tbody.appendChild(tr);
   });
 }
 
-async function editUseCase(id) {
+async function deleteUseCase(id) {
 
-  const data =
+  const list =
     await API.getAllUseCases();
 
-  const found =
-    data.find(
-      x => x.UseCase_ID === id
+  const filtered =
+    list.filter(
+      x => x.UseCase_ID !== id
     );
 
-  if (!found) return;
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(filtered)
+  );
 
-  currentEditId = id;
-
-  Object.keys(found)
-    .forEach(key => {
-
-      const field =
-        document.querySelector(
-          `[name="${key}"]`
-        );
-
-      if (field) {
-        field.value = found[key];
-      }
-    });
-
-  navigate('new');
+  renderDashboard();
+  renderAdminTable();
 
   showToast(
-    `Editing ${id}`,
+    'Deleted',
     'warning'
   );
 }
 
-/* =====================================================
-   AUTOSAVE
-===================================================== */
+function searchUseCases(keyword) {
 
-function autosave() {
+  keyword =
+    keyword.toLowerCase();
 
-  const data =
-    getFormData();
+  const rows =
+    document.querySelectorAll(
+      '#admin-table-body tr'
+    );
 
-  localStorage.setItem(
-    'autosave',
-    JSON.stringify(data)
-  );
+  rows.forEach(row => {
+
+    row.style.display =
+      row.innerText
+        .toLowerCase()
+        .includes(keyword)
+      ? ''
+      : 'none';
+  });
 }
 
-function checkAutosave() {
+/* ==========================================
+   STEP
+========================================== */
 
-  const saved =
-    localStorage.getItem('autosave');
+function nextStep() {
 
-  if (!saved) return;
+  currentStep++;
 
-  const data =
-    JSON.parse(saved);
+  if (currentStep > 4) {
+    currentStep = 4;
+  }
 
-  Object.keys(data)
-    .forEach(key => {
-
-      const field =
-        document.querySelector(
-          `[name="${key}"]`
-        );
-
-      if (field) {
-        field.value = data[key];
-      }
-    });
+  updateProgress();
 }
 
-setInterval(
-  autosave,
-  5000
-);
+function prevStep() {
 
-/* =====================================================
-   DROPDOWNS
-===================================================== */
+  currentStep--;
 
-function populateDropdowns() {
+  if (currentStep < 1) {
+    currentStep = 1;
+  }
 
-  document
-    .querySelectorAll(
-      '[data-options]'
-    )
-    .forEach(select => {
-
-      const key =
-        select.dataset.options;
-
-      const values =
-        lookupData[key] || [];
-
-      select.innerHTML =
-        '<option value="">Select</option>';
-
-      values.forEach(v => {
-
-        const option =
-          document.createElement('option');
-
-        option.value = v;
-        option.textContent = v;
-
-        select.appendChild(option);
-      });
-    });
+  updateProgress();
 }
 
-/* =====================================================
-   UI HELPERS
-===================================================== */
+function updateProgress() {
+
+  const width =
+    currentStep * 25;
+
+  const el =
+    document.getElementById(
+      'progress-fill'
+    );
+
+  if (el) {
+    el.style.width =
+      `${width}%`;
+  }
+}
+
+/* ==========================================
+   UI
+========================================== */
+
+function showLoading(show) {
+
+  const el =
+    document.getElementById(
+      'loading'
+    );
+
+  if (!el) return;
+
+  el.style.display =
+    show
+      ? 'flex'
+      : 'none';
+}
 
 function showToast(
   message,
@@ -568,66 +606,30 @@ function showToast(
 ) {
 
   const toast =
-    document.createElement('div');
+    document.getElementById(
+      'toast'
+    );
+
+  const text =
+    document.getElementById(
+      'toast-message'
+    );
 
   toast.className =
     `toast ${type}`;
 
-  toast.innerHTML = `
-    <div class="toast-icon">✓</div>
-    <div>${message}</div>
-  `;
+  text.textContent =
+    message;
 
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add('show');
-  }, 50);
+  toast.classList.add(
+    'show'
+  );
 
   setTimeout(() => {
 
-    toast.classList.remove('show');
-
-    setTimeout(() => {
-      toast.remove();
-    }, 300);
-
-  }, 3000);
-}
-
-function showLoading(show) {
-
-  let overlay =
-    document.querySelector(
-      '.loading-overlay'
+    toast.classList.remove(
+      'show'
     );
 
-  if (show) {
-
-    if (!overlay) {
-
-      overlay =
-        document.createElement('div');
-
-      overlay.className =
-        'loading-overlay';
-
-      overlay.innerHTML = `
-        <div class="spinner"></div>
-        <div class="loading-text">
-          Loading...
-        </div>
-      `;
-
-      document.body.appendChild(
-        overlay
-      );
-    }
-
-  } else {
-
-    if (overlay) {
-      overlay.remove();
-    }
-  }
+  }, 2500);
 }

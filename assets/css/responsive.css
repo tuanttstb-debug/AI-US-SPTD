@@ -1,1 +1,4 @@
-
+@media (max-width: 600px) {
+  .app-container { margin-top: 16px; }
+  .wizard-nav { flex-direction: column; gap: 8px; }
+}

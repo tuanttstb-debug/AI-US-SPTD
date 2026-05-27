@@ -1,1 +1,21 @@
-
+.progress-bar {
+  height: 4px; background: #e0e0e0; border-radius: 2px; margin-bottom: 24px;
+  width: 100%; position: relative;
+}
+.progress-bar::after {
+  content: ''; display: block; height: 100%; background: var(--color-primary);
+  width: 0%; transition: width 0.3s;
+}
+.step-indicators {
+  display: flex; justify-content: center; gap: 12px; margin-bottom: 28px;
+}
+.step-dot {
+  width: 30px; height: 30px; border-radius: 50%; background: #e0e0e0;
+  display: flex; align-items: center; justify-content: center; font-weight: bold;
+  color: white; transition: background 0.3s;
+}
+.step-dot.active { background: var(--color-primary); }
+.step-dot.done { background: var(--color-success); }
+.wizard-nav { display: flex; justify-content: space-between; margin-top: 24px; }
+.step { animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }

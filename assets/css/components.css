@@ -1,1 +1,36 @@
+.btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.btn-primary { background: var(--color-primary); color: white; }
+.btn-primary:hover { background: var(--color-primary-dark); }
+.btn-success { background: var(--color-success); color: white; }
+.btn-outline { background: transparent; border: 1px solid var(--color-text-secondary); color: var(--color-text-secondary); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.loading-overlay {
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index:999;
+}
+.loading-overlay.hidden { display: none; }
+.spinner {
+  width: 40px; height: 40px; border: 4px solid #ccc; border-top-color: var(--color-primary);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+.toast { padding: 10px 18px; border-radius: 6px; color: white; font-size: 0.9rem; box-shadow: var(--shadow); }
+.toast-success { background: var(--color-success); }
+.toast-error { background: var(--color-error); }
+.toast-warning { background: var(--color-warning); color: black; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; margin-bottom: 4px; font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 8px 12px; border: 1px solid #dadce0; border-radius: var(--border-radius);
+}
+.checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; }
+.checkbox-group label { display: flex; align-items: center; gap: 4px; font-weight: normal; }

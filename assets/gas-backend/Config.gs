@@ -1,5 +1,5 @@
 // Config.gs
-const SPREADSHEET_ID = '1xLMQLTgj2sRf1l9C6s6AHCT5zWJLQOofL375t8Pv_NA/edit?gid=449239939#gid=449239939'; // Replace with actual ID
+const SPREADSHEET_ID = '1xLMQLTgj2sRf1l9C6s6AHCT5zWJLQOofL375t8Pv_NA'; // Replace with actual ID
 
 const SHEETS = {
   MASTER: 'MASTER_DATA',

@@ -1,31 +1,25 @@
 // ─────────────────────────────────────────────────────────────────
 // api.js — HTTP client cho Google Apps Script Web App
 //
-// Tại sao không dùng fetch() thông thường với GAS?
+// Tại sao KHÔNG dùng fetch() (GET lẫn POST)?
 //
-// Vấn đề: GAS Web App luôn 302 redirect từ script.google.com
-//         → script.googleusercontent.com. Chrome kiểm tra CORS
-//         trên response 302 (script.google.com không có header đó)
-//         → ERR_FAILED trước khi tới GAS code.
+//   GET  fetch → GAS 302 redirect → browser CORS check thất bại
+//   POST fetch → GAS 200 OK nhưng thiếu Access-Control-Allow-Origin
+//               (ContentService.addHeader() không đáng tin với POST)
+//               → ERR_FAILED dù status 200
 //
-// Giải pháp:
-//   GET  → JSONP: inject <script> tag, bypass CORS hoàn toàn
-//   POST → fetch() với body là text/plain (không phải application/json)
-//          → không trigger OPTIONS preflight → GAS nhận được request
-//
-// GAS backend đọc body bằng e.postData.contents (string) rồi JSON.parse()
-// → không phụ thuộc vào Content-Type header.
+// Giải pháp: 100% JSONP cho mọi request
+//   • Inject <script src="url?callback=fn&payload=base64data">
+//   • Script tag KHÔNG bị CORS kiểm tra → redirect được follow tự do
+//   • GAS trả: fn({success, data, message})
+//   • Payload (data POST-like) → base64url encode → gắn vào query param
 // ─────────────────────────────────────────────────────────────────
 
 var Api = {
 
-  // ── GET via JSONP ───────────────────────────────────────────────
-  // JSONP inject <script src="url?callback=fn"> vào DOM.
-  // script.google.com redirect → script.googleusercontent.com,
-  // nhưng vì là <script> (không phải fetch) → CORS không áp dụng.
-  // GAS trả về: callback({success:true, data:{...}})
+  // ── JSONP core ──────────────────────────────────────────────────
   _jsonp(url, timeoutMs) {
-    timeoutMs = timeoutMs || 15000;
+    timeoutMs = timeoutMs || 20000;
     return new Promise(function(resolve, reject) {
       var cbName  = '__gasCb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       var script  = document.createElement('script');
@@ -42,104 +36,64 @@ var Api = {
 
       window[cbName] = function(data) {
         cleanup();
-        if (!data || !data.success) {
-          reject(new Error(data && data.message ? data.message : 'GAS trả về lỗi'));
-        } else {
-          resolve(data.data);
-        }
+        if (!data)              return reject(new Error('GAS không trả về dữ liệu'));
+        if (!data.success)      return reject(new Error(data.message || 'Lỗi từ server'));
+        resolve(data.data);
       };
 
       timer = setTimeout(function() {
         cleanup();
-        reject(new Error('Timeout kết nối GAS (' + (timeoutMs / 1000) + 's). Kiểm tra mạng hoặc GAS URL.'));
+        reject(new Error(
+          'Timeout kết nối GAS (' + (timeoutMs / 1000) + 's).\n' +
+          'Kiểm tra: GAS URL đúng chưa, deployment còn active không.'
+        ));
       }, timeoutMs);
 
       script.onerror = function() {
         cleanup();
-        reject(new Error('Không load được GAS script. Kiểm tra URL và deployment.'));
+        reject(new Error(
+          'GAS script load thất bại.\n' +
+          'Kiểm tra: URL deployment và cài đặt "Who has access: Anyone".'
+        ));
       };
 
-      // Append callback param
-      script.src = url + (url.indexOf('?') === -1 ? '?' : '&') + 'callback=' + cbName;
+      // Gắn callback vào URL
+      var sep = url.indexOf('?') === -1 ? '?' : '&';
+      script.src = url + sep + 'callback=' + cbName;
       (document.head || document.body).appendChild(script);
     });
   },
 
-  // ── POST via fetch (text/plain body — no preflight) ─────────────
-  // Content-Type: text/plain là "simple" CORS request → không cần preflight.
-  // Body là JSON string — GAS parse bằng JSON.parse(e.postData.contents).
-  async _post(url, data) {
-    let response;
-    try {
-      response = await fetch(url, {
-        method:   'POST',
-        body:     JSON.stringify(data),
-        redirect: 'follow'
-        // Không set Content-Type header → browser mặc định text/plain;charset=UTF-8
-        // → không trigger OPTIONS preflight
-      });
-    } catch (networkErr) {
-      throw new Error(
-        'Lỗi mạng khi gửi POST:\n' + networkErr.message + '\n' +
-        'Kiểm tra GAS URL và cài đặt deploy.'
-      );
+  // ── Request với optional payload (GET + JSONP cho mọi loại) ─────
+  // data sẽ được base64url-encode rồi gắn vào URL param "payload"
+  _request(url, data) {
+    if (data) {
+      try {
+        var json    = JSON.stringify(data);
+        // encode UTF-8 (Vietnamese) an toàn: JSON → %xx → bytes → base64
+        var b64     = btoa(unescape(encodeURIComponent(json)));
+        // base64url: thay +/= để URL-safe, không cần encodeURIComponent thêm
+        var payload = b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        var sep     = url.indexOf('?') === -1 ? '?' : '&';
+        url = url + sep + 'payload=' + payload;
+      } catch (encErr) {
+        return Promise.reject(new Error('Lỗi encode data: ' + encErr.message));
+      }
     }
-
-    // Parse response
-    let text = '';
-    try {
-      text = await response.text();
-    } catch (e) {
-      throw new Error('Không đọc được response từ server.');
-    }
-
-    // Nếu response là HTML → GAS chưa set "Anyone" hoặc URL sai
-    if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
-      throw new Error(
-        'GAS trả về trang HTML thay vì JSON.\n' +
-        'Nguyên nhân: GAS yêu cầu đăng nhập.\n' +
-        'Cách sửa: Apps Script → Deploy → Edit → "Who has access: Anyone" → Save.'
-      );
-    }
-
-    let json;
-    try {
-      json = JSON.parse(text);
-    } catch (e) {
-      throw new Error('Response không phải JSON hợp lệ: ' + text.substring(0, 200));
-    }
-
-    if (!json.success) throw new Error(json.message || 'Lỗi không xác định từ server');
-    return json.data;
+    return Api._jsonp(url);
   },
 
-  // ── Public API Methods ──────────────────────────────────────────
+  // ── Public API ──────────────────────────────────────────────────
 
-  getLookup() {
-    return Api._jsonp(API.lookup());
-  },
+  getLookup()         { return Api._request(API.lookup()); },
+  getUseCase(id)      { return Api._request(API.getUseCase(id)); },
+  getDashboard()      { return Api._request(API.dashboard()); },
+  health()            { return Api._request(API.health()); },
 
-  getUseCase(id) {
-    return Api._jsonp(API.getUseCase(id));
-  },
-
-  getDashboard() {
-    return Api._jsonp(API.dashboard());
-  },
-
-  health() {
-    return Api._jsonp(API.health());
-  },
-
-  createUseCase(data) {
-    return Api._post(API.create(), data);
-  },
-
-  updateUseCase(data) {
-    return Api._post(API.update(), data);
-  },
+  createUseCase(data) { return Api._request(API.create(), data); },
+  updateUseCase(data) { return Api._request(API.update(), data); },
 
   duplicateCheck(name, pain) {
-    return Api._post(API.duplicateCheck(), { UseCase_Name: name, Pain_Point: pain });
+    return Api._request(API.duplicateCheck(), { UseCase_Name: name, Pain_Point: pain });
   }
 };

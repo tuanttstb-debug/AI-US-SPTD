@@ -1,10 +1,54 @@
+/* ─────────────────────────────────────────
+   Toast — notification component
+   Fixed: multi-line support (pre-line), icon, close button
+   Added: ARIA live region (set on container in HTML)
+   ───────────────────────────────────────── */
 const Toast = {
-  show(message, type = 'info') {
+  _icons: {
+    success: '✓',
+    error:   '✕',
+    warning: '⚠',
+    info:    'ℹ'
+  },
+
+  show(message, type = 'info', duration = 4500) {
     const container = document.getElementById('toastContainer');
+    if (!container) return;
+
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    toast.textContent = message;
+    toast.setAttribute('role', 'alert');
+
+    // Icon
+    const icon = document.createElement('span');
+    icon.className = 'toast-icon';
+    icon.textContent = this._icons[type] || 'ℹ';
+    icon.setAttribute('aria-hidden', 'true');
+
+    // Message (pre-line supports \n separators — FIX BUG-03)
+    const msg = document.createElement('span');
+    msg.className = 'toast-message';
+    msg.textContent = message; // textContent is XSS-safe; pre-line handles \n
+    msg.style.whiteSpace = 'pre-line';
+
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.textContent = '×';
+    closeBtn.setAttribute('aria-label', 'Đóng thông báo');
+    closeBtn.addEventListener('click', () => toast.remove());
+
+    toast.appendChild(icon);
+    toast.appendChild(msg);
+    toast.appendChild(closeBtn);
     container.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
+
+    if (duration > 0) {
+      setTimeout(() => {
+        if (toast.parentNode) toast.remove();
+      }, duration);
+    }
+
+    return toast;
   }
 };

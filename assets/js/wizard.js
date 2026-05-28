@@ -4,7 +4,7 @@
    Fixed: progress bar targets inner .progress-fill div
    Extended: step labels in indicators, step counter, step subtitle
    ───────────────────────────────────────── */
-const Wizard = {
+var Wizard = {
   currentStep: 1,
   totalSteps: STEPS.length,
   isEditMode: false,
@@ -134,7 +134,7 @@ const Wizard = {
      - select: same name, collects via el.value (works for FormMapper)
      - textarea: same name, collects via el.value (works for FormMapper)
    ───────────────────────────────────────── */
-const FieldBuilder = {
+var FieldBuilder = {
 
   buildAll() {
     STEPS.forEach(step => {

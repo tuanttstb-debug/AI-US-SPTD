@@ -3,7 +3,7 @@
    Behavior preserved: same data structure, same API contract
    Compatible with: text, textarea, select, checkbox, number, email, url
    ───────────────────────────────────────── */
-const FormMapper = {
+var FormMapper = {
 
   /* Collect all form field values into a flat object.
      Output format unchanged — string values, arrays joined as comma-separated. */

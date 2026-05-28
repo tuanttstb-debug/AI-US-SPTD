@@ -1,56 +1,367 @@
+/* ─────────────────────────────────────────
+   FIELDS — field name constants (unchanged, maps to Google Sheets columns)
+   ───────────────────────────────────────── */
 const FIELDS = {
-  USE_CASE_NAME: 'UseCase_Name',
-  OWNER_NAME: 'Owner_Name',
-  OWNER_EMAIL: 'Owner_Email',
-  TEAM: 'Team',
-  BUSINESS_CATEGORY: 'Business_Category',
-  PAIN_POINT: 'Pain_Point',
-  CURRENT_PROCESS: 'Current_Process',
-  CURRENT_TIME_MIN: 'Current_Time_Min',
-  CURRENT_PROBLEM: 'Current_Problem',
-  USER_TYPE: 'User_Type',
-  EXPECTED_GOALS: 'Expected_Goals',
-  FLOW_DESC: 'Flow_Description',
-  INPUT_TYPES: 'Input_Types',
-  PROMPT_ROLE: 'Prompt_Role',
-  PROMPT_TASK: 'Prompt_Task',
-  PROMPT_GOAL: 'Prompt_Goal',
-  PROMPT_CONTEXT: 'Prompt_Context',
-  PROMPT_INPUT: 'Prompt_Input',
-  PROMPT_STEPS: 'Prompt_Steps',
-  PROMPT_OUTPUT_FORMAT: 'Prompt_Output_Format',
-  PROMPT_EVALUATION: 'Prompt_Evaluation',
-  DEMO_STATUS: 'Demo_Status',
-  DEMO_LINK: 'Demo_Link',
-  BEFORE_TIME_MIN: 'Before_Time_Min',
-  AFTER_TIME_MIN: 'After_Time_Min',
+  USE_CASE_NAME:       'UseCase_Name',
+  OWNER_NAME:          'Owner_Name',
+  OWNER_EMAIL:         'Owner_Email',
+  TEAM:                'Team',
+  BUSINESS_CATEGORY:   'Business_Category',
+  PAIN_POINT:          'Pain_Point',
+  CURRENT_PROCESS:     'Current_Process',
+  CURRENT_TIME_MIN:    'Current_Time_Min',
+  CURRENT_PROBLEM:     'Current_Problem',
+  USER_TYPE:           'User_Type',
+  EXPECTED_GOALS:      'Expected_Goals',
+  FLOW_DESC:           'Flow_Description',
+  INPUT_TYPES:         'Input_Types',
+  PROMPT_ROLE:         'Prompt_Role',
+  PROMPT_TASK:         'Prompt_Task',
+  PROMPT_GOAL:         'Prompt_Goal',
+  PROMPT_CONTEXT:      'Prompt_Context',
+  PROMPT_INPUT:        'Prompt_Input',
+  PROMPT_STEPS:        'Prompt_Steps',
+  PROMPT_OUTPUT_FORMAT:'Prompt_Output_Format',
+  PROMPT_EVALUATION:   'Prompt_Evaluation',
+  DEMO_STATUS:         'Demo_Status',
+  DEMO_LINK:           'Demo_Link',
+  BEFORE_TIME_MIN:     'Before_Time_Min',
+  AFTER_TIME_MIN:      'After_Time_Min',
   QUALITY_IMPROVEMENT: 'Quality_Improvement',
-  IMPROVEMENT_NOTE: 'Improvement_Note',
-  REUSE_LEVEL: 'Reuse_Level',
-  REUSE_ADJUSTMENT: 'Reuse_Adjustment',
-  WHEN_TO_USE: 'When_To_Use',
-  USAGE_STEPS: 'Usage_Steps',
-  USAGE_NOTES: 'Usage_Notes'
+  IMPROVEMENT_NOTE:    'Improvement_Note',
+  REUSE_LEVEL:         'Reuse_Level',
+  REUSE_ADJUSTMENT:    'Reuse_Adjustment',
+  WHEN_TO_USE:         'When_To_Use',
+  USAGE_STEPS:         'Usage_Steps',
+  USAGE_NOTES:         'Usage_Notes'
 };
 
+/* ─────────────────────────────────────────
+   STEPS — wizard step definitions (extended: added shortTitle)
+   .fields order is preserved — matches data collection order
+   ───────────────────────────────────────── */
 const STEPS = [
-  { id: 1, title: 'Thông tin nghiệp vụ', fields: [
-    FIELDS.USE_CASE_NAME, FIELDS.OWNER_NAME, FIELDS.OWNER_EMAIL, FIELDS.TEAM,
-    FIELDS.BUSINESS_CATEGORY, FIELDS.PAIN_POINT, FIELDS.CURRENT_PROCESS,
-    FIELDS.CURRENT_TIME_MIN, FIELDS.CURRENT_PROBLEM, FIELDS.USER_TYPE,
-    FIELDS.EXPECTED_GOALS
-  ]},
-  { id: 2, title: 'Luồng AI & Prompt', fields: [
-    FIELDS.FLOW_DESC, FIELDS.INPUT_TYPES, FIELDS.PROMPT_ROLE, FIELDS.PROMPT_TASK,
-    FIELDS.PROMPT_GOAL, FIELDS.PROMPT_CONTEXT, FIELDS.PROMPT_INPUT,
-    FIELDS.PROMPT_STEPS, FIELDS.PROMPT_OUTPUT_FORMAT, FIELDS.PROMPT_EVALUATION
-  ]},
-  { id: 3, title: 'Demo & Tái sử dụng', fields: [
-    FIELDS.DEMO_STATUS, FIELDS.DEMO_LINK, FIELDS.BEFORE_TIME_MIN,
-    FIELDS.AFTER_TIME_MIN, FIELDS.QUALITY_IMPROVEMENT, FIELDS.IMPROVEMENT_NOTE,
-    FIELDS.REUSE_LEVEL, FIELDS.REUSE_ADJUSTMENT
-  ]},
-  { id: 4, title: 'Hướng dẫn sử dụng', fields: [
-    FIELDS.WHEN_TO_USE, FIELDS.USAGE_STEPS, FIELDS.USAGE_NOTES
-  ]}
+  {
+    id: 1,
+    title: 'Thông tin nghiệp vụ',
+    shortTitle: 'Nghiệp vụ',
+    subtitle: 'Mô tả bài toán cần giải quyết bằng AI',
+    fields: [
+      FIELDS.USE_CASE_NAME, FIELDS.OWNER_NAME, FIELDS.OWNER_EMAIL, FIELDS.TEAM,
+      FIELDS.BUSINESS_CATEGORY, FIELDS.PAIN_POINT, FIELDS.CURRENT_PROCESS,
+      FIELDS.CURRENT_TIME_MIN, FIELDS.CURRENT_PROBLEM, FIELDS.USER_TYPE,
+      FIELDS.EXPECTED_GOALS
+    ]
+  },
+  {
+    id: 2,
+    title: 'Luồng AI & Prompt',
+    shortTitle: 'AI & Prompt',
+    subtitle: 'Mô tả cách AI xử lý bài toán',
+    fields: [
+      FIELDS.FLOW_DESC, FIELDS.INPUT_TYPES, FIELDS.PROMPT_ROLE, FIELDS.PROMPT_TASK,
+      FIELDS.PROMPT_GOAL, FIELDS.PROMPT_CONTEXT, FIELDS.PROMPT_INPUT,
+      FIELDS.PROMPT_STEPS, FIELDS.PROMPT_OUTPUT_FORMAT, FIELDS.PROMPT_EVALUATION
+    ]
+  },
+  {
+    id: 3,
+    title: 'Demo & Tái sử dụng',
+    shortTitle: 'Demo',
+    subtitle: 'Đánh giá hiệu quả và khả năng nhân rộng',
+    fields: [
+      FIELDS.DEMO_STATUS, FIELDS.DEMO_LINK, FIELDS.BEFORE_TIME_MIN,
+      FIELDS.AFTER_TIME_MIN, FIELDS.QUALITY_IMPROVEMENT, FIELDS.IMPROVEMENT_NOTE,
+      FIELDS.REUSE_LEVEL, FIELDS.REUSE_ADJUSTMENT
+    ]
+  },
+  {
+    id: 4,
+    title: 'Hướng dẫn sử dụng',
+    shortTitle: 'Hướng dẫn',
+    subtitle: 'Giúp đồng nghiệp tái sử dụng use case này',
+    fields: [
+      FIELDS.WHEN_TO_USE, FIELDS.USAGE_STEPS, FIELDS.USAGE_NOTES
+    ]
+  }
 ];
+
+/* ─────────────────────────────────────────
+   GROUP_CONFIG — field group metadata within each step
+   collapsible groups use <details> element
+   ───────────────────────────────────────── */
+const GROUP_CONFIG = {
+  identity: { label: 'Thông tin cơ bản' },
+  problem:  { label: 'Vấn đề nghiệp vụ' },
+  audience: { label: 'Đối tượng & Mục tiêu' },
+  flow:     { label: null },
+  prompt:   {
+    label: 'Thiết kế Prompt',
+    collapsible: true,
+    collapsed: true,
+    hint: 'Mở rộng nếu đã có prompt — hoặc điền sau'
+  },
+  demo:     { label: 'Trạng thái Demo' },
+  impact:   { label: 'Đánh giá tác động' },
+  reuse:    { label: 'Tái sử dụng' },
+  guide:    { label: null }
+};
+
+/* ─────────────────────────────────────────
+   FIELD_CONFIG — per-field UI metadata
+   Keys MUST match values in FIELDS (Google Sheets column names)
+   ───────────────────────────────────────── */
+const FIELD_CONFIG = {
+
+  /* ── STEP 1: Thông tin nghiệp vụ ── */
+
+  UseCase_Name: {
+    label: 'Tên Use Case',
+    type: 'text',
+    required: true,
+    placeholder: 'VD: Tóm tắt nội dung email khách hàng bằng AI',
+    helper: 'Tên ngắn gọn, dễ nhớ — mô tả rõ bài toán AI',
+    group: 'identity'
+  },
+  Owner_Name: {
+    label: 'Người đăng ký',
+    type: 'text',
+    required: true,
+    placeholder: 'Họ và tên đầy đủ',
+    group: 'identity'
+  },
+  Owner_Email: {
+    label: 'Email công việc',
+    type: 'email',
+    required: true,
+    placeholder: 'ten.ho@company.com',
+    group: 'identity'
+  },
+  Team: {
+    label: 'Team',
+    type: 'select',
+    required: true,
+    lookupKey: 'Team',
+    group: 'identity'
+  },
+  Business_Category: {
+    label: 'Lĩnh vực nghiệp vụ',
+    type: 'select',
+    required: true,
+    lookupKey: 'Business_Category',
+    group: 'identity'
+  },
+  Pain_Point: {
+    label: 'Điểm đau nghiệp vụ',
+    type: 'textarea',
+    required: true,
+    rows: 3,
+    placeholder: 'Mô tả vấn đề đang gặp phải: tốn thời gian, dễ sai sót, khó chuẩn hóa...',
+    helper: 'Hãy mô tả cụ thể vấn đề khiến bạn tìm đến AI',
+    group: 'problem'
+  },
+  Current_Process: {
+    label: 'Quy trình hiện tại',
+    type: 'textarea',
+    required: true,
+    rows: 4,
+    placeholder: 'Bước 1: ...\nBước 2: ...\nBước 3: ...',
+    helper: 'Mô tả các bước thực hiện thủ công hiện tại',
+    group: 'problem'
+  },
+  Current_Time_Min: {
+    label: 'Thời gian xử lý hiện tại',
+    type: 'number',
+    placeholder: '60',
+    helper: 'Thời gian trung bình để hoàn thành một lần',
+    suffix: 'phút',
+    group: 'problem'
+  },
+  Current_Problem: {
+    label: 'Hệ quả / Rủi ro',
+    type: 'textarea',
+    rows: 3,
+    placeholder: 'Sai sót xảy ra như thế nào? Chi phí ẩn, rủi ro nghiệp vụ là gì?',
+    group: 'problem'
+  },
+  User_Type: {
+    label: 'Đối tượng sử dụng',
+    type: 'checkbox',
+    lookupKey: 'User_Type',
+    group: 'audience'
+  },
+  Expected_Goals: {
+    label: 'Mục tiêu kỳ vọng',
+    type: 'checkbox',
+    lookupKey: 'Expected_Goals',
+    group: 'audience'
+  },
+
+  /* ── STEP 2: Luồng AI & Prompt ── */
+
+  Flow_Description: {
+    label: 'Mô tả luồng xử lý AI',
+    type: 'textarea',
+    required: true,
+    rows: 4,
+    placeholder: 'Bước 1: Người dùng nhập [dữ liệu]\nBước 2: AI xử lý [như thế nào]\nBước 3: Kết quả trả về [dạng gì]',
+    helper: 'Mô tả end-to-end từ đầu vào đến kết quả đầu ra của AI',
+    group: 'flow'
+  },
+  Input_Types: {
+    label: 'Loại dữ liệu đầu vào',
+    type: 'checkbox',
+    lookupKey: 'Input_Types',
+    group: 'flow'
+  },
+
+  /* Prompt group — collapsible */
+  Prompt_Role: {
+    label: 'Vai trò AI (Role)',
+    type: 'textarea',
+    rows: 2,
+    placeholder: 'Bạn là một chuyên gia phân tích tài chính với 10 năm kinh nghiệm...',
+    helper: 'Định nghĩa "nhân vật" AI sẽ đóng vai trong ngữ cảnh này',
+    group: 'prompt'
+  },
+  Prompt_Task: {
+    label: 'Nhiệm vụ cụ thể (Task)',
+    type: 'textarea',
+    rows: 3,
+    placeholder: 'Hãy đọc và tóm tắt nội dung email sau đây...',
+    helper: 'Lệnh chính mà AI cần thực hiện',
+    group: 'prompt'
+  },
+  Prompt_Goal: {
+    label: 'Mục tiêu đầu ra (Goal)',
+    type: 'textarea',
+    rows: 2,
+    placeholder: 'Tóm tắt ngắn gọn (3–5 bullet), nêu rõ yêu cầu chính, tone phù hợp...',
+    helper: 'Tiêu chuẩn của một kết quả tốt',
+    group: 'prompt'
+  },
+  Prompt_Context: {
+    label: 'Ngữ cảnh bổ sung (Context)',
+    type: 'textarea',
+    rows: 2,
+    placeholder: 'Đây là email khách hàng VIP. Giọng điệu cần chuyên nghiệp...',
+    helper: 'Thông tin bối cảnh giúp AI hiểu đúng tình huống',
+    group: 'prompt'
+  },
+  Prompt_Input: {
+    label: 'Mô tả đầu vào (Input)',
+    type: 'textarea',
+    rows: 2,
+    placeholder: 'Đầu vào là một đoạn email tiếng Việt, độ dài 200–500 từ...',
+    helper: 'Mô tả format và đặc điểm của dữ liệu đầu vào',
+    group: 'prompt'
+  },
+  Prompt_Steps: {
+    label: 'Các bước xử lý (Steps)',
+    type: 'textarea',
+    rows: 4,
+    placeholder: 'Bước 1: Đọc toàn bộ nội dung\nBước 2: Xác định yêu cầu chính\nBước 3: Tóm tắt theo cấu trúc...',
+    helper: 'Chain of thought — hướng dẫn AI suy nghĩ từng bước',
+    group: 'prompt'
+  },
+  Prompt_Output_Format: {
+    label: 'Định dạng đầu ra (Output)',
+    type: 'textarea',
+    rows: 3,
+    placeholder: '**Tóm tắt:** [1–2 câu]\n**Yêu cầu chính:** [bullet list]\n**Mức độ khẩn:** [Cao/Trung/Thấp]',
+    helper: 'Định nghĩa cấu trúc output mong muốn (markdown, JSON, bullet...)',
+    group: 'prompt'
+  },
+  Prompt_Evaluation: {
+    label: 'Tiêu chí đánh giá (Evaluation)',
+    type: 'textarea',
+    rows: 3,
+    placeholder: 'Kết quả tốt khi: (1) Tóm tắt đủ ý chính, (2) Không bỏ sót yêu cầu, (3) Ngôn ngữ phù hợp...',
+    helper: 'Khi nào bạn biết AI đã làm tốt?',
+    group: 'prompt'
+  },
+
+  /* ── STEP 3: Demo & Tái sử dụng ── */
+
+  Demo_Status: {
+    label: 'Trạng thái demo',
+    type: 'select',
+    options: ['Chưa có', 'Đã có demo', 'Đã triển khai'],
+    group: 'demo'
+  },
+  Demo_Link: {
+    label: 'Link demo / tài liệu',
+    type: 'url',
+    placeholder: 'https://',
+    helper: 'Link video demo, slide, hoặc bản thử nghiệm',
+    conditional: { field: 'Demo_Status', notValue: 'Chưa có' },
+    group: 'demo'
+  },
+  Before_Time_Min: {
+    label: 'Thời gian trước khi có AI',
+    type: 'number',
+    placeholder: '60',
+    suffix: 'phút',
+    group: 'impact'
+  },
+  After_Time_Min: {
+    label: 'Thời gian sau khi có AI',
+    type: 'number',
+    placeholder: '10',
+    suffix: 'phút',
+    helper: 'Hệ thống sẽ tự tính % tiết kiệm thời gian',
+    group: 'impact'
+  },
+  Quality_Improvement: {
+    label: 'Cải thiện chất lượng',
+    type: 'textarea',
+    rows: 2,
+    placeholder: 'Giảm sai sót từ 15% xuống 2%, chuẩn hóa output...',
+    group: 'impact'
+  },
+  Improvement_Note: {
+    label: 'Ghi chú thêm về hiệu quả',
+    type: 'textarea',
+    rows: 3,
+    placeholder: 'Nhận xét định tính từ người dùng, phản hồi từ khách hàng...',
+    group: 'impact'
+  },
+  Reuse_Level: {
+    label: 'Phạm vi tái sử dụng',
+    type: 'checkbox',
+    lookupKey: 'Reuse_Level',
+    group: 'reuse'
+  },
+  Reuse_Adjustment: {
+    label: 'Hướng dẫn điều chỉnh khi tái sử dụng',
+    type: 'textarea',
+    rows: 3,
+    placeholder: 'Khi áp dụng cho team khác, cần thay đổi: [phần nào], vì [lý do]...',
+    group: 'reuse'
+  },
+
+  /* ── STEP 4: Hướng dẫn sử dụng ── */
+
+  When_To_Use: {
+    label: 'Khi nào nên dùng use case này?',
+    type: 'textarea',
+    rows: 3,
+    placeholder: 'Dùng khi: cần tóm tắt nhanh email, có ít nhất 1 email >200 chữ...',
+    group: 'guide'
+  },
+  Usage_Steps: {
+    label: 'Hướng dẫn thực hiện từng bước',
+    type: 'textarea',
+    rows: 5,
+    placeholder: 'Bước 1: Copy nội dung email\nBước 2: Mở Claude / ChatGPT\nBước 3: Paste prompt + nội dung\nBước 4: Đọc kết quả, chỉnh sửa nếu cần',
+    helper: 'Hướng dẫn cụ thể để đồng nghiệp có thể tự làm được ngay',
+    group: 'guide'
+  },
+  Usage_Notes: {
+    label: 'Lưu ý & hạn chế',
+    type: 'textarea',
+    rows: 3,
+    placeholder: 'Không dùng cho email có thông tin bảo mật. Kết quả cần review trước khi gửi...',
+    group: 'guide'
+  }
+};

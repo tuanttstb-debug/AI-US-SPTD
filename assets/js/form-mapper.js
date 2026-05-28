@@ -1,43 +1,60 @@
+/* ─────────────────────────────────────────
+   FormMapper — collect and populate form data
+   Behavior preserved: same data structure, same API contract
+   Compatible with: text, textarea, select, checkbox, number, email, url
+   ───────────────────────────────────────── */
 const FormMapper = {
-  // Collect all form fields into object
+
+  /* Collect all form field values into a flat object.
+     Output format unchanged — string values, arrays joined as comma-separated. */
   collectData() {
     const form = document.getElementById('useCaseForm');
     const elements = form.querySelectorAll('input, select, textarea');
     const data = {};
+
     elements.forEach(el => {
-      if (el.name) {
-        if (el.type === 'checkbox') {
-          // handle multi checkbox: name ends with []
-          if (el.checked) {
-            if (!data[el.name]) data[el.name] = [];
-            data[el.name].push(el.value);
-          }
-        } else {
-          data[el.name] = el.value;
+      if (!el.name) return;
+      if (el.type === 'checkbox') {
+        // Accumulate checked checkbox values into array
+        if (el.checked) {
+          if (!data[el.name]) data[el.name] = [];
+          data[el.name].push(el.value);
         }
+      } else {
+        data[el.name] = el.value;
       }
     });
-    // Convert arrays to comma-separated string for backend
+
+    // Convert checkbox arrays to comma-separated strings (backend contract)
     Object.keys(data).forEach(key => {
       if (Array.isArray(data[key])) data[key] = data[key].join(', ');
     });
+
     return data;
   },
 
-  // Populate form from object (edit mode)
+  /* Populate form fields from a data object (edit mode / draft restore).
+     Works with: text input, textarea, select, number, email, url, checkbox groups. */
   populateData(data) {
+    if (!data) return;
     const form = document.getElementById('useCaseForm');
+    if (!form) return;
+
     Object.keys(data).forEach(key => {
-      const el = form.querySelector(`[name="${key}"]`);
-      if (!el) return;
-      if (el.type === 'checkbox') {
-        // handle multi checkbox
-        const values = String(data[key] || '').split(',').map(v => v.trim());
-        const checkboxes = form.querySelectorAll(`input[name="${key}"][type="checkbox"]`);
+      if (data[key] === undefined || data[key] === null) return;
+      const value = String(data[key]);
+
+      // Checkbox groups: find all checkboxes with this name
+      const checkboxes = form.querySelectorAll(`input[type="checkbox"][name="${key}"]`);
+      if (checkboxes.length > 0) {
+        const values = value.split(',').map(v => v.trim()).filter(Boolean);
         checkboxes.forEach(cb => { cb.checked = values.includes(cb.value); });
-      } else {
-        el.value = data[key] || '';
+        return;
       }
+
+      // Single element (input, select, textarea)
+      const el = form.querySelector(`[name="${key}"]`);
+      if (el) el.value = value;
     });
   }
 };

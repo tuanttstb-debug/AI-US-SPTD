@@ -9,5 +9,21 @@ var API = {
   update:         () => `${_gasBase}?action=update`,
   duplicateCheck: () => `${_gasBase}?action=duplicate-check`,
   dashboard:      () => `${_gasBase}?action=dashboard`,
-  health:         () => `${_gasBase}?action=health`
+  health:         () => `${_gasBase}?action=health`,
+
+  // Dashboard: list use cases với optional filters
+  list: (filters) => {
+    var url = _gasBase + '?action=list';
+    if (filters) {
+      if (filters.filter) url += '&filter='  + encodeURIComponent(filters.filter);
+      if (filters.status) url += '&status='  + encodeURIComponent(filters.status);
+      if (filters.team)   url += '&team='    + encodeURIComponent(filters.team);
+      if (filters.limit)  url += '&limit='   + encodeURIComponent(filters.limit);
+    }
+    return url;
+  },
+
+  // Approval endpoints (payload qua JSONP base64)
+  approve: () => `${_gasBase}?action=approve`,
+  reject:  () => `${_gasBase}?action=reject`
 };

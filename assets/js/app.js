@@ -1,46 +1,44 @@
 (function () {
-  let currentRecordId = null; // set in edit mode
+  var currentRecordId = null;
 
   /* ── Entry Point ── */
   async function init() {
-    showLoading(true, 'Đang tải dữ liệu...');
+    showLoading(true, 'Đang khởi tạo...');
     try {
-      // 1. Load lookup data (dropdowns, options)
-      const lookup = await Api.getLookup();
-      window.__LOOKUP = lookup;
 
-      // 2. Render wizard (form DOM must exist before populating)
+      // 1. Render form ngay lập tức (không cần đợi GAS)
+      //    Form dùng lookup defaults từ FIELD_CONFIG nếu GAS chưa load
       Wizard.init();
 
-      // 3. Determine mode: edit vs new
-      const params = new URLSearchParams(window.location.search);
+      // 2. Load lookup data từ GAS (background)
+      loadLookupData(); // async, không block
 
+      // 3. Edit mode hay new mode
+      const params = new URLSearchParams(window.location.search);
       if (params.has('edit')) {
-        // EDIT MODE — FIX BUG-02: init before populate
         currentRecordId = params.get('edit');
         showLoading(true, 'Đang tải use case...');
-        const data = await Api.getUseCase(currentRecordId);
-        Wizard.isEditMode = true;
-        FormMapper.populateData(data);     // form exists now ✓
-        FieldBuilder.refreshConditionals(); // re-evaluate conditional fields
-        showEditModeBanner(currentRecordId);
-
-      } else {
-        // NEW MODE — show draft banner instead of browser confirm()
-        const draft = Storage.load();
-        if (draft) {
-          showDraftBanner(draft);
+        try {
+          const data = await Api.getUseCase(currentRecordId);
+          Wizard.isEditMode = true;
+          FormMapper.populateData(data);
+          FieldBuilder.refreshConditionals();
+          showEditModeBanner(currentRecordId);
+        } catch (editErr) {
+          Toast.show('Không tải được use case: ' + editErr.message, 'error');
         }
+      } else {
+        const draft = Storage.load();
+        if (draft) showDraftBanner(draft);
       }
 
-      // 4. Autosave on any field change
+      // 4. Autosave
       document.getElementById('useCaseForm').addEventListener('change', () => {
-        const data = FormMapper.collectData();
-        Storage.save(data);
+        Storage.save(FormMapper.collectData());
         showAutosaveBadge();
       });
 
-      // 5. Submit button
+      // 5. Submit
       document.getElementById('submitBtn').addEventListener('click', submitForm);
 
     } catch (err) {
@@ -50,32 +48,92 @@
     }
   }
 
+  /* ── Load lookup data (không block form render) ── */
+  async function loadLookupData() {
+    try {
+      const lookup = await Api.getLookup();
+      window.__LOOKUP = lookup;
+      // Rebuild các select/checkbox đã render với data thật từ GAS
+      rebuildLookupFields();
+    } catch (err) {
+      // Fallback: dùng default values từ FIELD_CONFIG — form vẫn hoạt động
+      console.warn('Không load được lookup từ GAS, dùng defaults:', err.message);
+      Toast.show(
+        'Không kết nối được server.\nForm dùng dữ liệu mặc định — vẫn có thể điền và gửi.\n(' + err.message + ')',
+        'warning',
+        8000
+      );
+    }
+  }
+
+  /* ── Rebuild select/checkbox sau khi lookup load xong ── */
+  function rebuildLookupFields() {
+    const lookup = window.__LOOKUP;
+    if (!lookup) return;
+
+    // Rebuild các select dùng lookupKey
+    document.querySelectorAll('select[data-lookup]').forEach(select => {
+      const key = select.dataset.lookup;
+      const options = lookup[key];
+      if (!options || !options.length) return;
+      const currentVal = select.value;
+      // Giữ option đầu tiên (-- Chọn --) rồi thêm options mới
+      while (select.options.length > 1) select.remove(1);
+      options.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v; opt.textContent = v;
+        select.appendChild(opt);
+      });
+      if (currentVal) select.value = currentVal;
+    });
+
+    // Rebuild checkbox groups dùng lookupKey
+    document.querySelectorAll('.checkbox-group[data-lookup]').forEach(group => {
+      const key     = group.dataset.lookup;
+      const options = lookup[key];
+      if (!options || !options.length) return;
+      const fieldName   = group.querySelector('input[type="checkbox"]')?.name;
+      if (!fieldName) return;
+      const checkedVals = Array.from(group.querySelectorAll('input:checked')).map(cb => cb.value);
+      group.innerHTML = '';
+      options.forEach((opt, i) => {
+        const pill  = document.createElement('div');
+        pill.className = 'checkbox-pill';
+        const cb    = document.createElement('input');
+        cb.type  = 'checkbox';
+        cb.id    = 'field_' + fieldName + '_' + i;
+        cb.name  = fieldName;
+        cb.value = opt;
+        if (checkedVals.includes(opt)) cb.checked = true;
+        const lbl   = document.createElement('label');
+        lbl.htmlFor = cb.id;
+        lbl.textContent = opt;
+        pill.appendChild(cb); pill.appendChild(lbl);
+        group.appendChild(pill);
+      });
+    });
+  }
+
   /* ── Form Submission ── */
   async function submitForm() {
-    const data = FormMapper.collectData();
-
-    // Final validation (checks step 1 + step 2 required fields)
+    const data   = FormMapper.collectData();
     const errors = Validator.all(data);
     if (errors.length) {
-      Toast.show(errors.join('\n'), 'error'); // FIX BUG-03: '\n' not '<br>'
+      Toast.show(errors.join('\n'), 'error');
       return;
     }
-
     showLoading(true, 'Đang gửi...');
     try {
       if (currentRecordId) {
-        // EDIT MODE
         data.Record_ID = currentRecordId;
-        data.Status = data.Status || 'Submitted';
+        data.Status    = data.Status || 'Submitted';
         await Api.updateUseCase(data);
-        Storage.clear(); // FIX: clear draft after successful edit
+        Storage.clear();
         Toast.show('Cập nhật thành công!', 'success');
         showSuccessScreen('Đã cập nhật');
-
       } else {
-        // CREATE MODE
-        data.Status = 'Submitted';
-        const result = await Api.createUseCase(data);
+        data.Status   = 'Submitted';
+        const result  = await Api.createUseCase(data);
         Storage.clear();
         showSuccessScreen(result.usecase_id || 'AIUS-????');
       }
@@ -88,38 +146,32 @@
 
   /* ── Success Screen ── */
   function showSuccessScreen(useCaseId) {
-    // Hide wizard form content
-    document.getElementById('useCaseForm').style.display = 'none';
-    document.getElementById('wizardNavWrapper').style.display = 'none';
-    document.getElementById('stepIndicators').style.display = 'none';
-    document.getElementById('stepCounter').style.display = 'none';
-
-    // Show success screen
+    ['useCaseForm', 'wizardNavWrapper', 'stepIndicators', 'stepCounter'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
     const screen = document.getElementById('successScreen');
     const badge  = document.getElementById('successIdBadge');
-    if (badge) badge.textContent = useCaseId;
-    if (screen) screen.classList.remove('hidden');
-
-    // Scroll into view
-    if (screen) screen.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (badge)  badge.textContent = useCaseId;
+    if (screen) {
+      screen.classList.remove('hidden');
+      screen.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
-  /* ── Draft Banner (replaces browser confirm()) — FIX BUG-05 ── */
+  /* ── Draft Banner ── */
   function showDraftBanner(draft) {
     const banner     = document.getElementById('draftBanner');
     const restoreBtn = document.getElementById('draftRestoreBtn');
     const discardBtn = document.getElementById('draftDiscardBtn');
     if (!banner) return;
-
     banner.classList.remove('hidden');
-
     restoreBtn.addEventListener('click', () => {
       FormMapper.populateData(draft);
       FieldBuilder.refreshConditionals();
       banner.classList.add('hidden');
       Toast.show('Đã khôi phục bản nháp', 'success');
     }, { once: true });
-
     discardBtn.addEventListener('click', () => {
       Storage.clear();
       banner.classList.add('hidden');
@@ -135,8 +187,8 @@
     banner.classList.remove('hidden');
   }
 
-  /* ── Autosave Indicator ── */
-  let autosaveTimer = null;
+  /* ── Autosave Badge ── */
+  var autosaveTimer = null;
   function showAutosaveBadge() {
     const badge = document.getElementById('autosaveBadge');
     if (!badge) return;
@@ -144,16 +196,14 @@
     badge.classList.add('visible', 'saved');
     badge.classList.remove('saving');
     clearTimeout(autosaveTimer);
-    autosaveTimer = setTimeout(() => {
-      badge.classList.remove('visible');
-    }, 3000);
+    autosaveTimer = setTimeout(() => badge.classList.remove('visible'), 3000);
   }
 
   /* ── Loading Overlay ── */
   function showLoading(show, label) {
     const overlay = document.getElementById('loadingOverlay');
     const labelEl = document.getElementById('loadingLabel');
-    overlay.classList.toggle('hidden', !show);
+    if (overlay) overlay.classList.toggle('hidden', !show);
     if (labelEl && label) labelEl.textContent = label;
   }
 

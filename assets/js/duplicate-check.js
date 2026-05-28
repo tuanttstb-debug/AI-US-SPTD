@@ -1,4 +1,4 @@
-const DuplicateChecker = {
+var DuplicateChecker = {
   async check(name, painPoint) {
     if (!name || name.trim().length < 3) return;
     try {

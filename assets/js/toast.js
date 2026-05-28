@@ -3,7 +3,7 @@
    Fixed: multi-line support (pre-line), icon, close button
    Added: ARIA live region (set on container in HTML)
    ───────────────────────────────────────── */
-const Toast = {
+var Toast = {
   _icons: {
     success: '✓',
     error:   '✕',

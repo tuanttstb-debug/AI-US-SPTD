@@ -462,13 +462,20 @@ var FieldBuilder = {
   _bindConditionals() {
     document.querySelectorAll('[data-conditional]').forEach(wrapper => {
       try {
-        const cond = JSON.parse(wrapper.dataset.conditional);
+        const cond      = JSON.parse(wrapper.dataset.conditional);
         const triggerEl = document.querySelector(`[name="${cond.field}"]`);
         if (!triggerEl) return;
 
         const update = () => {
           const hide = triggerEl.value === cond.notValue || triggerEl.value === '';
           wrapper.style.display = hide ? 'none' : '';
+
+          // FIX: Clear value khi field bị ẩn → tránh submit data không hợp lệ
+          // (VD: Demo_Link = "111111111" khi Demo_Status = "Chưa có")
+          if (hide) {
+            const input = wrapper.querySelector('input, select, textarea');
+            if (input) input.value = '';
+          }
         };
 
         triggerEl.addEventListener('change', update);

@@ -372,8 +372,10 @@ var FieldBuilder = {
     group.className = 'checkbox-group';
     group.setAttribute('role', 'group');
     group.setAttribute('aria-labelledby', `${fieldId}_label`);
-    // data-lookup cho rebuildLookupFields() trong app.js
+    // data-lookup và data-field-name cho rebuildLookupFields() trong app.js
+    // data-field-name là bắt buộc để rebuild khi group ban đầu rỗng (không có input nào)
     if (config.lookupKey) group.dataset.lookup = config.lookupKey;
+    group.dataset.fieldName = name;
 
     sourceOptions.forEach((opt, i) => {
       const pill = document.createElement('div');

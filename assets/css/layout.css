@@ -1,14 +1,90 @@
+/* ── App Header ── */
 .app-header {
   background: var(--color-primary);
   color: white;
-  padding: 12px 24px;
+  height: var(--header-height);
+  padding: 0 var(--space-6);
   display: flex;
   align-items: center;
-  gap: 24px;
-  box-shadow: var(--shadow);
+  gap: var(--space-4);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
 }
+
+.app-header .logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.app-header .header-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255,255,255,0.3);
+}
+
+/* ── App Container ── */
 .app-container {
   max-width: var(--max-width);
-  margin: 32px auto;
-  padding: 0 16px;
+  margin: var(--space-8) auto var(--space-20);
+  padding: 0 var(--space-4);
+}
+
+/* ── Wizard Card ── */
+.wizard {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* ── Wizard Inner Padding ── */
+.wizard-body {
+  padding: var(--space-6) var(--space-8);
+}
+
+/* ── Section Card (field group) ── */
+.field-group {
+  margin-bottom: var(--space-4);
+}
+
+/* ── Wizard sticky nav area (bottom of card) ── */
+.wizard-nav-wrapper {
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-4) var(--space-8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* ── Loading / Toast containers ── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-overlay);
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.loading-overlay.hidden { display: none; }
+
+.toast-container {
+  position: fixed;
+  top: calc(var(--header-height) + var(--space-3));
+  right: var(--space-5);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 360px;
+  width: calc(100vw - var(--space-10));
 }

@@ -1,4 +1,4 @@
-const API = {
+var API = {
   lookup:       () => `${APP_CONFIG.API_BASE_URL}lookup`,
   getUseCase:   (id) => `${APP_CONFIG.API_BASE_URL}usecase/${id}`,
   create:       () => `${APP_CONFIG.API_BASE_URL}usecase/create`,

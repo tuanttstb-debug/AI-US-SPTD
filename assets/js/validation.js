@@ -1,54 +1,72 @@
 /* ─────────────────────────────────────────
-   Toast — notification component
-   Fixed: multi-line support (pre-line), icon, close button
-   Added: ARIA live region (set on container in HTML)
+   Validator — form validation
+   Preserved: step1(), step2(), all() — same logic, same API
+   Added: markErrors() — highlight invalid fields after Next click
+          clearErrors() — clear all error highlights
    ───────────────────────────────────────── */
-const Toast = {
-  _icons: {
-    success: '✓',
-    error:   '✕',
-    warning: '⚠',
-    info:    'ℹ'
+var Validator = {
+
+  step1(data) {
+    const err = [];
+    if (!data[FIELDS.USE_CASE_NAME])   err.push('Tên Use Case không được để trống');
+    if (!data[FIELDS.OWNER_NAME])      err.push('Họ tên người đăng ký không được để trống');
+    if (!data[FIELDS.OWNER_EMAIL] || !/^\S+@\S+\.\S+$/.test(data[FIELDS.OWNER_EMAIL]))
+      err.push('Email không hợp lệ');
+    if (!data[FIELDS.TEAM])            err.push('Vui lòng chọn Team');
+    if (!data[FIELDS.BUSINESS_CATEGORY]) err.push('Vui lòng chọn Lĩnh vực nghiệp vụ');
+    if (!data[FIELDS.PAIN_POINT])      err.push('Vui lòng mô tả Điểm đau nghiệp vụ');
+    if (!data[FIELDS.CURRENT_PROCESS]) err.push('Vui lòng mô tả Quy trình hiện tại');
+    return err;
   },
 
-  show(message, type = 'info', duration = 4500) {
-    const container = document.getElementById('toastContainer');
-    if (!container) return;
+  step2(data) {
+    const err = [];
+    if (!data[FIELDS.FLOW_DESC]) err.push('Vui lòng mô tả luồng xử lý AI');
+    return err;
+  },
 
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.setAttribute('role', 'alert');
+  // step3 & step4: no required fields (optional enrichment data)
 
-    // Icon
-    const icon = document.createElement('span');
-    icon.className = 'toast-icon';
-    icon.textContent = this._icons[type] || 'ℹ';
-    icon.setAttribute('aria-hidden', 'true');
+  all(data) {
+    return [...this.step1(data), ...this.step2(data)];
+  },
 
-    // Message (pre-line supports \n separators — FIX BUG-03)
-    const msg = document.createElement('span');
-    msg.className = 'toast-message';
-    msg.textContent = message; // textContent is XSS-safe; pre-line handles \n
-    msg.style.whiteSpace = 'pre-line';
+  /* Mark form fields as invalid after clicking Next/Submit */
+  markErrors(errors, currentStep) {
+    // Map error message to field name for targeted highlighting
+    const errorFieldMap = {
+      'Tên Use Case': FIELDS.USE_CASE_NAME,
+      'người đăng ký': FIELDS.OWNER_NAME,
+      'Email': FIELDS.OWNER_EMAIL,
+      'Team': FIELDS.TEAM,
+      'Lĩnh vực': FIELDS.BUSINESS_CATEGORY,
+      'Điểm đau': FIELDS.PAIN_POINT,
+      'Quy trình': FIELDS.CURRENT_PROCESS,
+      'luồng xử lý': FIELDS.FLOW_DESC,
+    };
 
-    // Close button
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'toast-close';
-    closeBtn.textContent = '×';
-    closeBtn.setAttribute('aria-label', 'Đóng thông báo');
-    closeBtn.addEventListener('click', () => toast.remove());
+    errors.forEach(errMsg => {
+      const matchKey = Object.keys(errorFieldMap).find(k => errMsg.includes(k));
+      if (!matchKey) return;
+      const fieldName = errorFieldMap[matchKey];
+      const wrapper = document.querySelector(`[data-field="${fieldName}"]`);
+      if (!wrapper) return;
+      wrapper.classList.add('has-error');
+      const input = wrapper.querySelector('input, select, textarea');
+      if (input) input.setAttribute('aria-invalid', 'true');
+      const errorEl = wrapper.querySelector('.field-error');
+      if (errorEl && !errorEl.textContent) errorEl.textContent = 'Trường này là bắt buộc';
+    });
+  },
 
-    toast.appendChild(icon);
-    toast.appendChild(msg);
-    toast.appendChild(closeBtn);
-    container.appendChild(toast);
-
-    if (duration > 0) {
-      setTimeout(() => {
-        if (toast.parentNode) toast.remove();
-      }, duration);
-    }
-
-    return toast;
+  /* Clear all error highlights (call before re-validating) */
+  clearErrors() {
+    document.querySelectorAll('.form-group.has-error').forEach(wrapper => {
+      wrapper.classList.remove('has-error');
+      const input = wrapper.querySelector('input, select, textarea');
+      if (input) input.removeAttribute('aria-invalid');
+      const errorEl = wrapper.querySelector('.field-error');
+      if (errorEl) errorEl.textContent = '';
+    });
   }
 };

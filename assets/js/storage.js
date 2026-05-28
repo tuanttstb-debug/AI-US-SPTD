@@ -1,4 +1,4 @@
-const Storage = {
+var Storage = {
   save: (data) => {
     localStorage.setItem(APP_CONFIG.AUTO_SAVE_KEY, JSON.stringify(data));
   },

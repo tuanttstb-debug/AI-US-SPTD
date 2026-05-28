@@ -355,6 +355,9 @@ var FieldBuilder = {
       select.appendChild(opt);
     });
 
+    // data-lookup cho rebuildLookupFields() trong app.js
+    if (config.lookupKey) select.dataset.lookup = config.lookupKey;
+
     wrap.appendChild(select);
     return wrap;
   },
@@ -369,6 +372,8 @@ var FieldBuilder = {
     group.className = 'checkbox-group';
     group.setAttribute('role', 'group');
     group.setAttribute('aria-labelledby', `${fieldId}_label`);
+    // data-lookup cho rebuildLookupFields() trong app.js
+    if (config.lookupKey) group.dataset.lookup = config.lookupKey;
 
     sourceOptions.forEach((opt, i) => {
       const pill = document.createElement('div');

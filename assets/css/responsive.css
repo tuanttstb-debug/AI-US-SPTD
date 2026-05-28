@@ -1,4 +1,141 @@
-@media (max-width: 600px) {
-  .app-container { margin-top: 16px; }
-  .wizard-nav { flex-direction: column; gap: 8px; }
+/* ── Mobile: max 480px ── */
+@media (max-width: 480px) {
+  .app-container {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-12);
+    padding: 0 var(--space-3);
+  }
+
+  .wizard-body {
+    padding: var(--space-4) var(--space-4);
+  }
+
+  .wizard-meta {
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .wizard-nav-wrapper {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .step-indicators {
+    padding: var(--space-4) var(--space-4);
+    gap: 0;
+  }
+
+  .step-dot-label { display: none; } /* hide labels on very small screens */
+
+  .step-indicators::before {
+    left: calc(50% - 90px);
+    right: calc(50% - 90px);
+  }
+
+  .wizard-nav {
+    flex-direction: column-reverse;
+    gap: var(--space-2);
+  }
+
+  .wizard-nav .btn {
+    width: 100%;
+  }
+
+  .wizard-nav-left,
+  .wizard-nav-right {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .wizard-nav-left .btn,
+  .wizard-nav-right .btn {
+    flex: 1;
+  }
+
+  .success-screen {
+    padding: var(--space-10) var(--space-4);
+  }
+
+  .draft-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .draft-banner-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .checkbox-group,
+  .radio-group {
+    gap: var(--space-2);
+  }
+
+  .toast-container {
+    left: var(--space-3);
+    right: var(--space-3);
+    max-width: 100%;
+    width: auto;
+  }
+}
+
+/* ── Tablet: max 768px ── */
+@media (max-width: 768px) {
+  .app-header { padding: 0 var(--space-4); }
+
+  .app-container {
+    margin-top: var(--space-5);
+  }
+
+  .wizard-body {
+    padding: var(--space-5) var(--space-6);
+  }
+
+  .wizard-meta {
+    padding: var(--space-3) var(--space-6);
+  }
+
+  .wizard-nav-wrapper {
+    padding: var(--space-4) var(--space-6);
+  }
+
+  .step-indicators {
+    padding: var(--space-4) var(--space-6);
+  }
+
+  /* Reduce step label font size on tablet */
+  .step-dot-label {
+    font-size: 10px;
+    max-width: 60px;
+  }
+}
+
+/* ── Tablet+ landscape and desktop: min 769px ── */
+@media (min-width: 769px) {
+  .wizard-nav .btn {
+    min-width: 120px;
+  }
+}
+
+/* ── Input zoom prevention (iOS Safari) ── */
+@supports (-webkit-touch-callout: none) {
+  .form-group input:not([type="checkbox"]):not([type="radio"]),
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .app-header,
+  .wizard-nav-wrapper,
+  .progress-track,
+  .step-indicators,
+  .wizard-meta,
+  .toast-container,
+  .loading-overlay {
+    display: none;
+  }
+  .wizard { box-shadow: none; border: 1px solid #ccc; }
+  body { background: white; }
 }

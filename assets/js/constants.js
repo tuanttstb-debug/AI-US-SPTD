@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────
    FIELDS — field name constants (unchanged, maps to Google Sheets columns)
    ───────────────────────────────────────── */
-const FIELDS = {
+var FIELDS = {
   USE_CASE_NAME:       'UseCase_Name',
   OWNER_NAME:          'Owner_Name',
   OWNER_EMAIL:         'Owner_Email',
@@ -40,7 +40,7 @@ const FIELDS = {
    STEPS — wizard step definitions (extended: added shortTitle)
    .fields order is preserved — matches data collection order
    ───────────────────────────────────────── */
-const STEPS = [
+var STEPS = [
   {
     id: 1,
     title: 'Thông tin nghiệp vụ',
@@ -90,7 +90,7 @@ const STEPS = [
    GROUP_CONFIG — field group metadata within each step
    collapsible groups use <details> element
    ───────────────────────────────────────── */
-const GROUP_CONFIG = {
+var GROUP_CONFIG = {
   identity: { label: 'Thông tin cơ bản' },
   problem:  { label: 'Vấn đề nghiệp vụ' },
   audience: { label: 'Đối tượng & Mục tiêu' },
@@ -111,7 +111,7 @@ const GROUP_CONFIG = {
    FIELD_CONFIG — per-field UI metadata
    Keys MUST match values in FIELDS (Google Sheets column names)
    ───────────────────────────────────────── */
-const FIELD_CONFIG = {
+var FIELD_CONFIG = {
 
   /* ── STEP 1: Thông tin nghiệp vụ ── */
 

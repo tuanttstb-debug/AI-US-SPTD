@@ -95,5 +95,10 @@ var Api = {
 
   duplicateCheck(name, pain) {
     return Api._request(API.duplicateCheck(), { UseCase_Name: name, Pain_Point: pain });
-  }
+  },
+
+  // Dashboard & Approval
+  listUseCases(filters) { return Api._request(API.list(filters)); },
+  approveUseCase(data)  { return Api._request(API.approve(), data); },
+  rejectUseCase(data)   { return Api._request(API.reject(),  data); }
 };

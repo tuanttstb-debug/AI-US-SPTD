@@ -1,0 +1,66 @@
+/* ── Headings ── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
+
+h1 { font-size: var(--text-3xl); }
+h2 { font-size: var(--text-xl); margin-bottom: var(--space-5); }
+h3 { font-size: var(--text-lg); }
+h4 { font-size: var(--text-base); }
+
+/* ── Step title (h2 inside wizard steps) ── */
+.step h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.step-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+  line-height: var(--leading-relaxed);
+}
+
+/* ── Section headers (field group headings) ── */
+.section-header {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-4) 0 var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-5);
+  margin-top: var(--space-2);
+}
+
+.section-header:first-child {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* ── Body text variants ── */
+.text-sm   { font-size: var(--text-sm); }
+.text-xs   { font-size: var(--text-xs); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-error     { color: var(--color-error); }
+.text-success   { color: var(--color-success); }
+
+/* ── App header title ── */
+.header-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  color: rgba(255,255,255,0.92);
+  letter-spacing: 0.01em;
+}
+
+.logo {
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-bold);
+  color: white;
+  letter-spacing: -0.01em;
+}

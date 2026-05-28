@@ -1,0 +1,280 @@
+/* ── Form Group ── */
+.form-group {
+  margin-bottom: var(--space-5);
+  position: relative;
+}
+
+/* ── Label ── */
+.form-group label.field-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  line-height: 1.3;
+  cursor: default;
+}
+
+.field-required-mark {
+  color: var(--color-error);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+/* ── Helper text ── */
+.field-helper {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  line-height: var(--leading-relaxed);
+}
+
+/* ── Inline error message ── */
+.field-error {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-error);
+  line-height: var(--leading-normal);
+  min-height: 0;
+}
+.field-error:empty { display: none; }
+
+/* ── Base input / select / textarea ── */
+.form-group input:not([type="checkbox"]):not([type="radio"]),
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-md); /* 16px — prevents iOS zoom */
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.form-group input:not([type="checkbox"]):not([type="radio"])::placeholder,
+.form-group textarea::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* Hover */
+.form-group input:not([type="checkbox"]):not([type="radio"]):hover:not(:disabled),
+.form-group select:hover:not(:disabled),
+.form-group textarea:hover:not(:disabled) {
+  border-color: #bdc1c6;
+}
+
+/* Focus */
+.form-group input:not([type="checkbox"]):not([type="radio"]):focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+  outline: none;
+}
+
+/* Error state */
+.form-group.has-error input:not([type="checkbox"]):not([type="radio"]),
+.form-group.has-error select,
+.form-group.has-error textarea {
+  border-color: var(--color-border-error);
+  background: #fffbfb;
+}
+.form-group.has-error input:not([type="checkbox"]):not([type="radio"]):focus,
+.form-group.has-error select:focus,
+.form-group.has-error textarea:focus {
+  box-shadow: 0 0 0 3px rgba(217,48,37,0.12);
+}
+
+/* ── Textarea ── */
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: var(--leading-relaxed);
+}
+
+/* ── Select ── */
+.form-group .select-wrapper {
+  position: relative;
+}
+.form-group .select-wrapper::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--color-text-secondary);
+}
+.form-group select {
+  padding-right: var(--space-8);
+  cursor: pointer;
+  background-image: none;
+}
+
+/* ── Number input with suffix ── */
+.input-with-suffix {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.input-with-suffix input {
+  border-radius: var(--radius-md) 0 0 var(--radius-md) !important;
+  flex: 1;
+}
+.input-suffix {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-left: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ── Checkbox / Radio Pill Group ── */
+.checkbox-group,
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.checkbox-pill,
+.radio-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.checkbox-pill input[type="checkbox"],
+.radio-pill input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkbox-pill label,
+.radio-pill label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: var(--color-surface);
+  user-select: none;
+  line-height: 1.4;
+  min-height: 32px;
+}
+
+.checkbox-pill label:hover,
+.radio-pill label:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.checkbox-pill input:checked + label,
+.radio-pill input:checked + label {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-weight: var(--font-weight-medium);
+}
+
+.checkbox-pill input:focus-visible + label,
+.radio-pill input:focus-visible + label {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── URL input ── */
+input[type="url"] {
+  font-family: var(--font-family);
+}
+
+/* ── Collapsible Prompt Section (details/summary) ── */
+.collapsible-section {
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+}
+
+.collapsible-section summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  cursor: pointer;
+  user-select: none;
+  background: var(--color-bg);
+  border-bottom: 1.5px solid transparent;
+  list-style: none;
+  transition: background var(--transition-fast);
+}
+.collapsible-section summary::-webkit-details-marker { display: none; }
+.collapsible-section summary::marker { display: none; }
+
+.collapsible-section summary:hover { background: var(--color-primary-light); }
+
+.collapsible-section[open] summary {
+  border-bottom-color: var(--color-border);
+  background: var(--color-primary-light);
+}
+
+.collapsible-title {
+  flex: 1;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+.collapsible-hint {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+.collapsible-chevron {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  transition: transform var(--transition-fast);
+  width: 16px;
+  text-align: center;
+}
+.collapsible-section[open] .collapsible-chevron {
+  transform: rotate(180deg);
+}
+
+.collapsible-body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.collapsible-body .form-group:last-child {
+  margin-bottom: 0;
+}

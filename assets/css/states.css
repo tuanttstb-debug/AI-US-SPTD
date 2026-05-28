@@ -1,0 +1,136 @@
+/* ── Success Screen ── */
+.success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-16) var(--space-8);
+  animation: fadeSlideIn 0.4s ease;
+}
+
+.success-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--color-success-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-6);
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.success-icon-wrap svg {
+  width: 36px;
+  height: 36px;
+  stroke: var(--color-success);
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.success-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+}
+
+.success-id-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-full);
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-bold);
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-4);
+}
+
+.success-desc {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  max-width: 400px;
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-8);
+}
+
+.success-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── Skeleton Loading ── */
+.skeleton-screen {
+  padding: var(--space-6) var(--space-8);
+}
+
+.skeleton-block {
+  background: linear-gradient(90deg,
+    var(--color-border) 25%,
+    #f0f0f0 50%,
+    var(--color-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-title {
+  height: 24px;
+  width: 40%;
+  margin-bottom: var(--space-6);
+}
+
+.skeleton-field {
+  margin-bottom: var(--space-5);
+}
+.skeleton-label {
+  height: 14px;
+  width: 28%;
+  margin-bottom: var(--space-2);
+}
+.skeleton-input {
+  height: 42px;
+  width: 100%;
+}
+.skeleton-textarea {
+  height: 88px;
+  width: 100%;
+}
+
+/* ── Loading spinner label ── */
+.loading-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-3);
+}
+
+/* ── Edit mode banner ── */
+.edit-mode-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-5);
+  background: var(--color-primary-light);
+  border-bottom: 1px solid rgba(26,115,232,0.2);
+  font-size: var(--text-sm);
+  color: var(--color-primary-dark);
+}
+
+.edit-mode-banner-icon { font-size: var(--text-md); }
+.edit-mode-banner-text { flex: 1; }

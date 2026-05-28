@@ -1,5 +1,7 @@
 (function () {
-  var currentRecordId = null;
+  var currentRecordId  = null;
+  // Lưu data edit mode để re-apply sau khi lookup rebuild xong (fix race condition)
+  var _pendingEditData = null;
 
   /* ── Entry Point ── */
   async function init() {
@@ -20,6 +22,7 @@
         showLoading(true, 'Đang tải use case...');
         try {
           const data = await Api.getUseCase(currentRecordId);
+          _pendingEditData = data; // Lưu để rebuildLookupFields có thể re-apply
           Wizard.isEditMode = true;
           FormMapper.populateData(data);
           FieldBuilder.refreshConditionals();
@@ -88,11 +91,14 @@
     });
 
     // Rebuild checkbox groups dùng lookupKey
+    // FIX BUG-A: dùng data-field-name (luôn set lúc tạo) thay vì querySelector input
+    // querySelector trả null khi group được render rỗng (window.__LOOKUP chưa load)
     document.querySelectorAll('.checkbox-group[data-lookup]').forEach(group => {
       const key     = group.dataset.lookup;
       const options = lookup[key];
       if (!options || !options.length) return;
-      const fieldName   = group.querySelector('input[type="checkbox"]')?.name;
+      const fieldName = group.dataset.fieldName
+                     || group.querySelector('input[type="checkbox"]')?.name;
       if (!fieldName) return;
       const checkedVals = Array.from(group.querySelectorAll('input:checked')).map(cb => cb.value);
       group.innerHTML = '';
@@ -112,6 +118,13 @@
         group.appendChild(pill);
       });
     });
+
+    // FIX BUG-B: Re-apply edit data sau khi rebuild (fix race condition)
+    // Nếu getUseCase() resolve trước getLookup(), select values có thể bị xoá
+    // khi rebuild options. Re-populate ở đây đảm bảo data không bị mất.
+    if (_pendingEditData) {
+      FormMapper.populateData(_pendingEditData);
+    }
   }
 
   /* ── Form Submission ── */

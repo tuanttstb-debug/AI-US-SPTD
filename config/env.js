@@ -1,5 +1,6 @@
 var APP_CONFIG = {
-  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbxqLGQAhKmFHN8Q6Oc9Jemkt0E6uB_fQ810-HyJ55CI7N5iybjfQFbd69lzP_kCfGnlDQ/exec/', // Replace with real URL
+  // Cập nhật URL mỗi khi deploy lại GAS (URL thay đổi theo mỗi lần deploy mới)
+  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbxMncB5aTuH_B9Nzq_u9xD1B2AzLy5nEXQ93trHyEL7jzh6fyj0mFkgN99cIjPgGaglTg/exec/',
   VERSION: '1.0.0',
   AUTO_SAVE_KEY: 'ai_usecase_draft',
   DUPLICATE_THRESHOLD: 0.8

@@ -66,16 +66,6 @@
       Owner_Name:  user.displayName || user.email,
       Owner_Email: user.email
     });
-    var form = document.getElementById('useCaseForm');
-    if (!form) return;
-    ['Owner_Name', 'Owner_Email'].forEach(function (name) {
-      var el = form.querySelector('[name="' + name + '"]');
-      if (el) {
-        el.readOnly = true;
-        el.style.background = 'var(--color-bg)';
-        el.style.cursor = 'default';
-      }
-    });
   }
 
   /* ── Load lookup data (không block form render) ── */

@@ -1,37 +1,36 @@
-/* ─────────────────────────────────────────
-   login.css — Login page styles
-   TPBank-inspired: purple header card, clean enterprise look
-   ───────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════
+   login.css — TPBank BIZ Login Page
+   Full-page centered card with purple header
+   ═══════════════════════════════════════════════════ */
 
 /* ── Page layout ── */
 .login-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #F4F5F7;
+  background: var(--color-bg);
 }
 
 /* ── Header ── */
 .login-header {
-  background: linear-gradient(135deg, var(--color-purple-darker) 0%, var(--color-purple-dark) 60%, var(--color-purple) 100%);
+  background: var(--sidebar-gradient);
   height: var(--portal-header-height);
   display: flex;
   align-items: center;
-  padding: 0 var(--space-6);
-  box-shadow: 0 2px 8px rgba(76, 29, 149, 0.4);
+  padding: 0 var(--space-8);
+  box-shadow: 0 2px 12px rgba(107, 34, 180, 0.25);
   flex-shrink: 0;
 }
-
 .login-brand {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   color: white;
   text-decoration: none;
 }
-.login-brand-icon { font-size: 1.5rem; line-height: 1; }
+.login-brand-icon { font-size: 1.4rem; line-height: 1; }
 .login-brand-name {
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   font-weight: var(--font-weight-bold);
   color: white;
   letter-spacing: -0.01em;
@@ -45,28 +44,27 @@
   justify-content: center;
   padding: var(--space-8) var(--space-4);
 }
-
 .login-card {
   width: 100%;
   max-width: 420px;
-  background: white;
+  background: var(--color-surface);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
 
+/* ── Card top — purple gradient ── */
 .login-card-top {
-  background: linear-gradient(135deg, var(--color-purple-dark) 0%, var(--color-purple) 100%);
-  padding: var(--space-8) var(--space-8) var(--space-6);
+  background: var(--sidebar-gradient);
+  padding: var(--space-8) var(--space-8) var(--space-7);
   text-align: center;
 }
-
 .login-card-icon {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   background: rgba(255,255,255,0.15);
-  border: 2px solid rgba(255,255,255,0.25);
+  border: 1.5px solid rgba(255,255,255,0.25);
   border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
@@ -74,29 +72,27 @@
   font-size: 1.75rem;
   margin: 0 auto var(--space-4);
 }
-
 .login-card-title {
-  font-size: var(--text-2xl);
+  font-size: var(--text-3xl);
   font-weight: var(--font-weight-bold);
   color: white;
   margin: 0 0 var(--space-2);
   letter-spacing: -0.02em;
 }
-
 .login-card-subtitle {
   font-size: var(--text-sm);
-  color: rgba(255,255,255,0.78);
+  color: rgba(255,255,255,0.72);
   margin: 0;
   line-height: var(--leading-relaxed);
 }
 
+/* ── Card body ── */
 .login-card-body {
   padding: var(--space-7) var(--space-8) var(--space-8);
 }
 
 /* ── Form fields ── */
 .login-field { margin-bottom: var(--space-5); }
-
 .login-label {
   display: block;
   font-size: var(--text-sm);
@@ -104,25 +100,24 @@
   color: var(--color-text);
   margin-bottom: var(--space-2);
 }
-
 .login-input {
   width: 100%;
   padding: var(--space-3) var(--space-4);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
-  font-size: var(--text-base);
+  font-size: var(--text-md);
   font-family: var(--font-family);
   color: var(--color-text);
-  background: white;
+  background: var(--color-surface);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   outline: none;
   box-sizing: border-box;
 }
 .login-input:focus {
-  border-color: var(--color-purple);
-  box-shadow: 0 0 0 3px var(--color-purple-light);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
-.login-input::placeholder { color: var(--color-text-tertiary); }
+.login-input::placeholder { color: var(--color-text-muted); }
 .login-input.has-error {
   border-color: var(--color-error);
   box-shadow: 0 0 0 3px var(--color-error-light);
@@ -134,7 +129,7 @@
   gap: var(--space-1);
   font-size: var(--text-sm);
   color: var(--color-error);
-  margin-top: var(--space-1);
+  margin-top: var(--space-2);
 }
 .login-field-error.visible { display: flex; }
 
@@ -142,7 +137,7 @@
 .login-btn {
   width: 100%;
   padding: var(--space-3) var(--space-5);
-  background: linear-gradient(135deg, var(--color-purple), var(--color-purple-mid));
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: var(--radius-md);
@@ -150,8 +145,7 @@
   font-weight: var(--font-weight-semibold);
   font-family: var(--font-family);
   cursor: pointer;
-  transition: opacity var(--transition-fast), transform var(--transition-fast),
-              box-shadow var(--transition-fast);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -159,13 +153,11 @@
   min-height: 48px;
   margin-top: var(--space-2);
 }
-.login-btn:hover {
-  opacity: 0.92;
-  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.4);
-  transform: translateY(-1px);
+.login-btn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  box-shadow: 0 4px 16px rgba(123, 44, 191, 0.32);
 }
-.login-btn:active { transform: translateY(0); }
-.login-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+.login-btn:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
 
 .login-btn-spinner {
   width: 18px;
@@ -184,7 +176,7 @@
 .login-note {
   text-align: center;
   font-size: var(--text-xs);
-  color: var(--color-text-tertiary);
+  color: var(--color-text-muted);
   margin-top: var(--space-6);
   line-height: var(--leading-relaxed);
 }
@@ -199,5 +191,5 @@
     box-shadow: none;
   }
   .login-card-body { padding: var(--space-6); }
-  .login-header { padding: 0 var(--space-4); }
+  .login-header    { padding: 0 var(--space-4); }
 }

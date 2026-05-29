@@ -120,6 +120,10 @@
   margin: 0 auto;
   padding: var(--space-8) var(--space-4) var(--space-16);
 }
+/* When portal-main sits inside .app-content (sidebar layout), remove double-padding */
+.app-content > .portal-main {
+  padding: 0 0 var(--space-8);
+}
 .portal-page-title {
   font-size: var(--text-2xl);
   font-weight: var(--font-weight-bold);

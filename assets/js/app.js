@@ -12,6 +12,9 @@
       //    Form dùng lookup defaults từ FIELD_CONFIG nếu GAS chưa load
       Wizard.init();
 
+      // Auto-fill và lock trường người đăng ký từ user đã đăng nhập
+      _autoFillOwner();
+
       // 2. Load lookup data từ GAS (background)
       loadLookupData(); // async, không block
 
@@ -49,6 +52,30 @@
     } finally {
       showLoading(false);
     }
+  }
+
+  /* ── Auto-fill owner fields từ session user ── */
+  function _autoFillOwner() {
+    if (typeof AuthService === 'undefined') return;
+    var user = AuthService.getUser();
+    if (!user) return;
+    // Chỉ auto-fill khi không phải edit mode (edit mode đã có data riêng)
+    var params = new URLSearchParams(window.location.search);
+    if (params.has('edit')) return;
+    FormMapper.populateData({
+      Owner_Name:  user.displayName || user.email,
+      Owner_Email: user.email
+    });
+    var form = document.getElementById('useCaseForm');
+    if (!form) return;
+    ['Owner_Name', 'Owner_Email'].forEach(function (name) {
+      var el = form.querySelector('[name="' + name + '"]');
+      if (el) {
+        el.readOnly = true;
+        el.style.background = 'var(--color-bg)';
+        el.style.cursor = 'default';
+      }
+    });
   }
 
   /* ── Load lookup data (không block form render) ── */

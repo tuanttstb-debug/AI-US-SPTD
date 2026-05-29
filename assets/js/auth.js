@@ -99,7 +99,10 @@ var AuthService = (function () {
      */
     requireAuth: function () {
       if (!this.isLoggedIn()) {
-        var ret = encodeURIComponent(window.location.pathname.replace(/^\//, '') + window.location.search);
+        // Use only the filename (basename) to avoid duplicating the base path
+        // when deployed under a subdirectory (e.g. GitHub Pages /repo-name/).
+        var page = window.location.pathname.split('/').filter(Boolean).pop() || 'index.html';
+        var ret  = encodeURIComponent(page + window.location.search);
         window.location.replace('login.html?return=' + ret);
         return false;
       }

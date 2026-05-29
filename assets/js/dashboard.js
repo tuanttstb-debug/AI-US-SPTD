@@ -10,6 +10,7 @@
   var _dashData    = null;
   var _pendingList = [];
   var _allList     = [];
+  var _charts      = {};
 
   // ── Status display config ────────────────────────────────────────
   var STATUS_CFG = {
@@ -190,24 +191,80 @@
     if (el) el.textContent = value;
   }
 
-  // ── Status Chart ─────────────────────────────────────────────────
+  // ── Status Chart (doughnut via Chart.js) ─────────────────────────
   function renderStatusChart(breakdown) {
     var container = document.getElementById('statusChart');
     if (!container) return;
     var total = objSum(breakdown);
     if (total === 0) { container.innerHTML = emptyChart(); return; }
 
+    if (typeof Chart === 'undefined') {
+      _renderStatusChartCSS(container, breakdown, total);
+      return;
+    }
+
+    var order = ['Approved', 'Under Review', 'Submitted', 'Draft', 'Rejected', 'Archived'];
+    var labels = [], data = [], colors = [];
+    order.forEach(function (status) {
+      var count = breakdown[status] || 0;
+      if (!count) return;
+      var cfg = STATUS_CFG[status] || { label: status, color: '#dadce0' };
+      labels.push(cfg.label);
+      data.push(count);
+      colors.push(cfg.color);
+    });
+
+    var canvas = container.querySelector('canvas');
+    if (!canvas) { container.innerHTML = '<canvas></canvas>'; canvas = container.querySelector('canvas'); }
+
+    if (_charts.status) { _charts.status.destroy(); }
+
+    _charts.status = new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: colors,
+          borderWidth: 2,
+          borderColor: '#fff',
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 1.6,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { padding: 14, font: { size: 12 }, usePointStyle: true, pointStyleWidth: 10 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var pct = ((ctx.parsed / total) * 100).toFixed(1);
+                return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function _renderStatusChartCSS(container, breakdown, total) {
     var order = ['Approved', 'Under Review', 'Submitted', 'Draft', 'Rejected', 'Archived'];
     container.innerHTML = order.map(function (status) {
       var count = breakdown[status] || 0;
-      if (count === 0) return '';
+      if (!count) return '';
       var cfg = STATUS_CFG[status] || { label: status, color: '#dadce0' };
       var pct = ((count / total) * 100).toFixed(1);
-      return chartRow(cfg.label, pct + '%', cfg.color, count + ' (' + pct + '%)');
+      return _chartRow(cfg.label, pct + '%', cfg.color, count + ' (' + pct + '%)');
     }).join('');
   }
 
-  // ── Generic Breakdown Chart ───────────────────────────────────────
+  // ── Generic Breakdown Chart (horizontal bar via Chart.js) ─────────
   function renderBreakdownChart(containerId, breakdown) {
     var container = document.getElementById(containerId);
     if (!container) return;
@@ -216,17 +273,72 @@
       .sort(function (a, b) { return b[1] - a[1]; });
 
     if (entries.length === 0) { container.innerHTML = emptyChart(); return; }
-    var maxVal = entries[0][1];
 
+    if (typeof Chart === 'undefined') {
+      _renderBreakdownChartCSS(container, entries);
+      return;
+    }
+
+    var top    = entries.slice(0, 8);
+    var labels = top.map(function (e) { return e[0]; });
+    var data   = top.map(function (e) { return e[1]; });
+    var ratio  = containerId === 'categoryChart' ? 3.5 : 2;
+
+    var canvas = container.querySelector('canvas');
+    if (!canvas) { container.innerHTML = '<canvas></canvas>'; canvas = container.querySelector('canvas'); }
+
+    if (_charts[containerId]) { _charts[containerId].destroy(); }
+
+    _charts[containerId] = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: 'rgba(123,44,191,0.72)',
+          borderColor: '#7B2CBF',
+          borderWidth: 0,
+          borderRadius: 4,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: ratio,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) { return ' ' + ctx.parsed.x + ' use case'; }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { precision: 0, font: { size: 11 } },
+            grid: { color: 'rgba(0,0,0,0.04)' }
+          },
+          y: {
+            ticks: { font: { size: 12 } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  }
+
+  function _renderBreakdownChartCSS(container, entries) {
+    var maxVal = entries[0][1] || 1;
     container.innerHTML = entries.slice(0, 8).map(function (e) {
       var pct = ((e[1] / maxVal) * 100).toFixed(0);
-      return chartRow(e[0], pct + '%',
-        'var(--color-primary)', String(e[1]),
-        'var(--color-primary-light)', true);
+      return _chartRow(e[0], pct + '%', 'var(--color-primary)', String(e[1]), 'var(--color-primary-light)', true);
     }).join('');
   }
 
-  function chartRow(label, widthPct, barColor, countText, bgColor, bordered) {
+  function _chartRow(label, widthPct, barColor, countText, bgColor, bordered) {
     var barStyle = 'width:' + widthPct + ';background:' + (bgColor || barColor);
     if (bordered) barStyle += ';border-left:3px solid ' + barColor;
     return '<div class="chart-row">' +

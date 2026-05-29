@@ -63,6 +63,24 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var email = (emailInput.value || '').trim();
+
+      // Use AuthService if available
+      if (typeof AuthService !== 'undefined') {
+        var result = AuthService.login(email);
+        if (!result.success || !AuthService.isAdmin()) {
+          errEl.textContent = result.success
+            ? 'Email này không có quyền truy cập dashboard quản lý.'
+            : result.error;
+          errEl.classList.remove('hidden');
+          return;
+        }
+        _adminEmail = email;
+        errEl.classList.add('hidden');
+        showDashboard();
+        return;
+      }
+
+      // Legacy fallback
       if (!isAdminEmail(email)) {
         errEl.textContent = 'Email này không có quyền truy cập dashboard quản lý.';
         errEl.classList.remove('hidden');
@@ -77,12 +95,18 @@
     var logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', function () {
-        sessionStorage.removeItem(APP_CONFIG.ADMIN_SESSION_KEY);
-        _adminEmail = null;
-        _dashData   = null;
-        _pendingList = [];
-        _allList     = [];
-        showGate();
+        if (typeof AuthService !== 'undefined') {
+          AuthService.logout();
+          window.location.replace('login.html');
+        } else {
+          // Legacy fallback
+          sessionStorage.removeItem(APP_CONFIG.ADMIN_SESSION_KEY);
+          _adminEmail  = null;
+          _dashData    = null;
+          _pendingList = [];
+          _allList     = [];
+          showGate();
+        }
       });
     }
   }
@@ -461,7 +485,27 @@
 
   // ── Init ─────────────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', function () {
-    bindGate();
+
+    // AuthService integration (auth.js must load before dashboard.js)
+    if (typeof AuthService !== 'undefined') {
+      // Redirect to login if not logged in, redirect to portal if not admin
+      if (!AuthService.isLoggedIn()) {
+        window.location.replace('login.html?return=dashboard.html');
+        return;
+      }
+      if (!AuthService.isAdmin()) {
+        window.location.replace('index.html');
+        return;
+      }
+      // Admin confirmed — bypass gate, go straight to dashboard
+      _adminEmail = AuthService.getUser().email;
+      showDashboard();
+    } else {
+      // Fallback: legacy email-gate flow (auth.js not loaded)
+      checkAdminAccess();
+    }
+
+    bindGate();   // Keep for legacy fallback path & logout binding
     bindTabs();
     bindSearch();
     bindRefresh();
@@ -469,12 +513,9 @@
     document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
     document.getElementById('modalConfirmBtn').addEventListener('click', confirmApproval);
 
-    // Close modal on backdrop click
     document.getElementById('approvalModal').addEventListener('click', function (e) {
       if (e.target === this) closeModal();
     });
-
-    checkAdminAccess();
   });
 
   // ── Public API (gọi từ inline onclick trên pending cards) ─────────

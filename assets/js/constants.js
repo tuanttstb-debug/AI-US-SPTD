@@ -49,7 +49,6 @@ var STEPS = [
     fields: [
       FIELDS.USE_CASE_NAME,
       FIELDS.OWNER_NAME,
-      FIELDS.OWNER_EMAIL,
       FIELDS.TEAM,
       FIELDS.BUSINESS_CATEGORY,
       FIELDS.CURRENT_STAGE,       // ← Stage S1-S4
@@ -150,13 +149,6 @@ var FIELD_CONFIG = {
     type: 'text',
     required: true,
     placeholder: 'Họ và tên đầy đủ',
-    group: 'identity'
-  },
-  Owner_Email: {
-    label: 'Mã người đăng ký',
-    type: 'text',
-    required: true,
-    placeholder: 'VD: tuantt4',
     group: 'identity'
   },
   Team: {

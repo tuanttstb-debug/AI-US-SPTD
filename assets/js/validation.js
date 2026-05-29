@@ -10,8 +10,8 @@ var Validator = {
     const err = [];
     if (!data[FIELDS.USE_CASE_NAME])   err.push('Tên Use Case không được để trống');
     if (!data[FIELDS.OWNER_NAME])      err.push('Họ tên người đăng ký không được để trống');
-    if (!data[FIELDS.OWNER_EMAIL] || !/^\S+@\S+\.\S+$/.test(data[FIELDS.OWNER_EMAIL]))
-      err.push('Email không hợp lệ');
+    if (!data[FIELDS.OWNER_EMAIL] || !String(data[FIELDS.OWNER_EMAIL]).trim())
+      err.push('Mã người đăng ký không được để trống');
     if (!data[FIELDS.TEAM])            err.push('Vui lòng chọn Team');
     if (!data[FIELDS.BUSINESS_CATEGORY]) err.push('Vui lòng chọn Lĩnh vực nghiệp vụ');
     if (!data[FIELDS.PAIN_POINT])      err.push('Vui lòng mô tả Điểm đau nghiệp vụ');
@@ -36,8 +36,8 @@ var Validator = {
     // Map error message to field name for targeted highlighting
     const errorFieldMap = {
       'Tên Use Case': FIELDS.USE_CASE_NAME,
+      'Mã người đăng ký': FIELDS.OWNER_EMAIL,  // must be before 'người đăng ký' (substring overlap)
       'người đăng ký': FIELDS.OWNER_NAME,
-      'Email': FIELDS.OWNER_EMAIL,
       'Team': FIELDS.TEAM,
       'Lĩnh vực': FIELDS.BUSINESS_CATEGORY,
       'Điểm đau': FIELDS.PAIN_POINT,

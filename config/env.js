@@ -11,6 +11,9 @@ var APP_CONFIG = {
   // Lưu ý: đây là kiểm tra phía frontend (UI-level). Backend GAS có validation riêng.
   ADMIN_EMAILS: ['tuantt.stb@gmail.com', 'tuantt4@tpb.com.vn'],
 
-  // sessionStorage key — lưu email admin trong phiên làm việc
-  ADMIN_SESSION_KEY: 'ai_admin_email'
+  // sessionStorage key — lưu email admin trong phiên làm việc (legacy, kept for backward compat)
+  ADMIN_SESSION_KEY: 'ai_admin_email',
+
+  // sessionStorage key — lưu full user object {email, displayName, role, loginAt}
+  USER_SESSION_KEY: 'ai_user_session'
 };

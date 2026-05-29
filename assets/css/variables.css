@@ -89,4 +89,21 @@
   --max-width:         720px;
   --header-height:     56px;
   --wizard-nav-height: 72px;
+
+  /* ── Enterprise Purple Palette (portal + login) ── */
+  --color-purple:         #6D28D9;
+  --color-purple-dark:    #4C1D95;
+  --color-purple-darker:  #2E1065;
+  --color-purple-mid:     #7C3AED;
+  --color-purple-light:   #EDE9FE;
+  --color-purple-surface: #F5F3FF;
+
+  /* ── Accent / Gold (chevron, CTA) ── */
+  --color-accent:         #F59E0B;
+  --color-accent-dark:    #D97706;
+  --color-accent-light:   #FEF3C7;
+
+  /* ── Portal Layout ── */
+  --portal-header-height: 64px;
+  --portal-max-width:     768px;
 }

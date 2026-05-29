@@ -1,4 +1,66 @@
-/* ── Mobile: max 480px ── */
+/* ═══════════════════════════════════════════════════
+   responsive.css — TPBank BIZ Responsive System
+   Desktop-first: 1440 → 1280 → 1024 → 768 → 480
+   ═══════════════════════════════════════════════════ */
+
+/* ── 1280px ── */
+@media (max-width: 1280px) {
+  :root {
+    --sidebar-width: 240px;
+  }
+  .app-content { padding: var(--space-6); }
+}
+
+/* ── 1024px — Sidebar collapse threshold ── */
+@media (max-width: 1024px) {
+  .app-main { margin-left: 0; }
+
+  .app-sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+    z-index: var(--z-sidebar);
+  }
+  .app-sidebar.is-open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .topbar-sidebar-toggle { display: flex; }
+
+  .app-content { padding: var(--space-5) var(--space-4); }
+
+  .kpi-row     { grid-template-columns: repeat(2, 1fr); }
+  .dash-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* ── 768px — Tablet ── */
+@media (max-width: 768px) {
+  .app-topbar { padding: 0 var(--space-4); }
+  .app-header { padding: 0 var(--space-4); }
+
+  .app-container {
+    margin-top: var(--space-5);
+    margin-bottom: var(--space-12);
+  }
+
+  .wizard-body         { padding: var(--space-5) var(--space-5); }
+  .wizard-meta         { padding: var(--space-3) var(--space-5); }
+  .wizard-nav-wrapper  { padding: var(--space-4) var(--space-5); }
+  .step-indicators     { padding: var(--space-5) var(--space-5); }
+
+  .step-dot-label { font-size: 10px; max-width: 66px; }
+
+  .chart-row   { grid-template-columns: 90px 1fr 45px; }
+  .dash-tab    { padding: var(--space-3) var(--space-4); font-size: var(--text-sm); }
+
+  .topbar-user-name  { display: none; }
+  .topbar-user-chip  { padding: var(--space-1); border-radius: 50%; }
+
+  .pending-card-actions { flex-wrap: wrap; }
+  .admin-gate-card { padding: var(--space-8) var(--space-6); }
+}
+
+/* ── 480px — Mobile ── */
 @media (max-width: 480px) {
   .app-container {
     margin-top: var(--space-4);
@@ -6,69 +68,36 @@
     padding: 0 var(--space-3);
   }
 
-  .wizard-body {
-    padding: var(--space-4) var(--space-4);
-  }
+  .wizard-body        { padding: var(--space-4); }
+  .wizard-meta        { padding: var(--space-2) var(--space-4); }
+  .wizard-nav-wrapper { padding: var(--space-3) var(--space-4); }
+  .step-indicators    { padding: var(--space-4); }
 
-  .wizard-meta {
-    padding: var(--space-2) var(--space-4);
-  }
-
-  .wizard-nav-wrapper {
-    padding: var(--space-3) var(--space-4);
-  }
-
-  .step-indicators {
-    padding: var(--space-4) var(--space-4);
-    gap: 0;
-  }
-
-  .step-dot-label { display: none; } /* hide labels on very small screens */
-
+  .step-dot-label { display: none; }
   .step-indicators::before {
     left: calc(50% - 90px);
     right: calc(50% - 90px);
   }
 
-  .wizard-nav {
-    flex-direction: column-reverse;
-    gap: var(--space-2);
-  }
-
-  .wizard-nav .btn {
-    width: 100%;
-  }
-
+  .wizard-nav { flex-direction: column-reverse; gap: var(--space-2); }
+  .wizard-nav .btn          { width: 100%; }
   .wizard-nav-left,
-  .wizard-nav-right {
-    width: 100%;
-    justify-content: stretch;
-  }
-
+  .wizard-nav-right         { width: 100%; justify-content: stretch; }
   .wizard-nav-left .btn,
-  .wizard-nav-right .btn {
-    flex: 1;
-  }
+  .wizard-nav-right .btn    { flex: 1; }
 
-  .success-screen {
-    padding: var(--space-10) var(--space-4);
-  }
+  .success-screen { padding: var(--space-10) var(--space-4); }
 
   .draft-banner {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-3);
   }
+  .draft-banner-actions { width: 100%; justify-content: flex-end; }
 
-  .draft-banner-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .checkbox-group,
-  .radio-group {
-    gap: var(--space-2);
-  }
+  .kpi-row      { grid-template-columns: 1fr; }
+  .search-input { width: 100%; }
+  .modal-card   { margin: var(--space-4); }
 
   .toast-container {
     left: var(--space-3);
@@ -76,47 +105,18 @@
     max-width: 100%;
     width: auto;
   }
+
+  .checkbox-group,
+  .radio-group { gap: var(--space-2); }
+
+  .sidebar-brand-sub { display: none; }
+
+  .portal-header    { padding: 0 var(--space-4); }
+  .portal-main      { padding: var(--space-5) var(--space-3) var(--space-12); }
+  .portal-user-chip { max-width: 130px; }
 }
 
-/* ── Tablet: max 768px ── */
-@media (max-width: 768px) {
-  .app-header { padding: 0 var(--space-4); }
-
-  .app-container {
-    margin-top: var(--space-5);
-  }
-
-  .wizard-body {
-    padding: var(--space-5) var(--space-6);
-  }
-
-  .wizard-meta {
-    padding: var(--space-3) var(--space-6);
-  }
-
-  .wizard-nav-wrapper {
-    padding: var(--space-4) var(--space-6);
-  }
-
-  .step-indicators {
-    padding: var(--space-4) var(--space-6);
-  }
-
-  /* Reduce step label font size on tablet */
-  .step-dot-label {
-    font-size: 10px;
-    max-width: 60px;
-  }
-}
-
-/* ── Tablet+ landscape and desktop: min 769px ── */
-@media (min-width: 769px) {
-  .wizard-nav .btn {
-    min-width: 120px;
-  }
-}
-
-/* ── Input zoom prevention (iOS Safari) ── */
+/* ── iOS Safari: font zoom prevention ── */
 @supports (-webkit-touch-callout: none) {
   .form-group input:not([type="checkbox"]):not([type="radio"]),
   .form-group select,
@@ -128,14 +128,18 @@
 /* ── Print ── */
 @media print {
   .app-header,
+  .app-sidebar,
+  .app-topbar,
   .wizard-nav-wrapper,
   .progress-track,
   .step-indicators,
   .wizard-meta,
   .toast-container,
-  .loading-overlay {
-    display: none;
+  .loading-overlay,
+  .sidebar-overlay {
+    display: none !important;
   }
-  .wizard { box-shadow: none; border: 1px solid #ccc; }
-  body { background: white; }
+  .app-main   { margin-left: 0 !important; }
+  .wizard     { box-shadow: none; border: 1px solid #ccc; }
+  body        { background: white; }
 }

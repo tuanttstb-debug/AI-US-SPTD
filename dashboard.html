@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Dashboard quản lý AI Use Case — TT SPTD">
-  <title>Dashboard Quản lý — AI Use Case</title>
+  <title>Dashboard — AI Use Case</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237B2CBF' stroke-width='1.5'><path stroke-linecap='round' stroke-linejoin='round' d='M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z'/></svg>">
 
   <link rel="stylesheet" href="assets/css/variables.css">
@@ -19,16 +19,13 @@
 </head>
 <body>
 
-  <!-- ══ Enterprise App Shell ══ -->
   <div class="app-layout">
 
     <!-- ── Left Sidebar ── -->
     <aside class="app-sidebar" id="appSidebar" role="navigation" aria-label="Điều hướng chính">
 
-      <!-- Brand -->
       <a href="index.html" class="sidebar-brand" aria-label="Trang chủ">
         <div class="sidebar-brand-logo" aria-hidden="true">
-          <!-- sparkles icon -->
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
           </svg>
@@ -39,15 +36,12 @@
         </div>
       </a>
 
-      <!-- Navigation -->
       <nav class="sidebar-nav" role="menubar">
-
         <span class="sidebar-section-label">Quản lý</span>
 
-        <a href="dashboard.html" class="sidebar-nav-item is-active" role="menuitem"
-           aria-current="page">
+        <!-- Dashboard — admin only, shown via JS -->
+        <a href="dashboard.html" class="sidebar-nav-item is-active" role="menuitem" aria-current="page" id="navDashboard" style="display:none">
           <i class="sidebar-nav-icon" aria-hidden="true">
-            <!-- chart-bar-square icon -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
               <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
             </svg>
@@ -57,7 +51,6 @@
 
         <a href="register.html" class="sidebar-nav-item" role="menuitem">
           <i class="sidebar-nav-icon" aria-hidden="true">
-            <!-- document-plus icon -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
             </svg>
@@ -65,44 +58,36 @@
           <span class="sidebar-nav-label">Đăng ký Use Case</span>
         </a>
 
-        <div class="sidebar-nav-item is-disabled" role="menuitem" aria-disabled="true"
-             style="opacity:0.5; cursor:default; pointer-events:none;">
+        <a href="dashboard.html?tab=my" class="sidebar-nav-item" role="menuitem" id="navMyUs">
           <i class="sidebar-nav-icon" aria-hidden="true">
-            <!-- clipboard-document-list icon -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
             </svg>
           </i>
           <span class="sidebar-nav-label">Use Case của tôi</span>
-          <span class="sidebar-nav-badge" aria-hidden="true">Soon</span>
-        </div>
+        </a>
 
         <div class="sidebar-divider" aria-hidden="true"></div>
         <span class="sidebar-section-label">Hệ thống</span>
 
         <a href="index.html" class="sidebar-nav-item" role="menuitem">
           <i class="sidebar-nav-icon" aria-hidden="true">
-            <!-- home icon -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg>
           </i>
           <span class="sidebar-nav-label">Trang chủ</span>
         </a>
-
       </nav>
 
-      <!-- Sidebar footer: user info + logout -->
       <div class="sidebar-footer">
         <div class="sidebar-user">
           <div class="sidebar-user-avatar" id="sidebarAvatar" aria-hidden="true"></div>
           <div class="sidebar-user-info">
             <span class="sidebar-user-name" id="sidebarUserName"></span>
-            <span class="sidebar-user-role">Admin</span>
+            <span class="sidebar-user-role" id="sidebarUserRole">Người dùng</span>
           </div>
-          <button class="sidebar-logout-btn" id="sidebarLogoutBtn"
-                  title="Đăng xuất" aria-label="Đăng xuất">
-            <!-- arrow-right-on-rectangle icon -->
+          <button class="sidebar-logout-btn" id="sidebarLogoutBtn" title="Đăng xuất" aria-label="Đăng xuất">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
             </svg>
@@ -110,29 +95,22 @@
         </div>
       </div>
 
-    </aside><!-- /app-sidebar -->
+    </aside>
 
-    <!-- Sidebar overlay (mobile) -->
     <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
 
     <!-- ── Main Area ── -->
     <div class="app-main">
 
-      <!-- TopBar -->
       <header class="app-topbar" role="banner">
-        <button class="topbar-sidebar-toggle" id="sidebarToggle"
-                aria-label="Mở/đóng menu" aria-expanded="false"
-                aria-controls="appSidebar">
-          <!-- bars-3 icon -->
+        <button class="topbar-sidebar-toggle" id="sidebarToggle" aria-label="Mở/đóng menu" aria-expanded="false" aria-controls="appSidebar">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
-        <h1 class="topbar-title" id="topbarTitle">Dashboard Quản lý</h1>
+        <h1 class="topbar-title" id="topbarTitle">Dashboard</h1>
         <div class="topbar-actions" id="topbarActions">
-          <button id="refreshBtn" class="topbar-icon-btn" title="Làm mới dữ liệu"
-                  aria-label="Làm mới dữ liệu">
-            <!-- arrow-path icon -->
+          <button id="refreshBtn" class="topbar-icon-btn" title="Làm mới dữ liệu" aria-label="Làm mới dữ liệu" style="display:none">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
             </svg>
@@ -144,50 +122,15 @@
         </div>
       </header>
 
-      <!-- Content -->
       <div class="app-content">
 
-        <!-- Admin Gate -->
-        <div id="adminGate" class="admin-gate-container">
-          <div class="admin-gate-card">
-            <div class="admin-gate-icon" aria-hidden="true">
-              <!-- lock-closed icon -->
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="36" height="36">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-              </svg>
-            </div>
-            <h2 class="admin-gate-title">Xác thực quyền truy cập</h2>
-            <p class="admin-gate-desc">Nhập email công việc để mở Dashboard quản lý</p>
-            <form id="adminGateForm" class="admin-gate-form" novalidate>
-              <div class="form-group">
-                <label class="field-label" for="adminEmailInput">
-                  Email công việc
-                  <span class="field-required-mark" aria-label="bắt buộc">*</span>
-                </label>
-                <input type="email" id="adminEmailInput" name="adminEmail"
-                       class="form-control" placeholder="ten.ho@company.com"
-                       autocomplete="email" required>
-              </div>
-              <p id="adminGateError" class="admin-gate-error hidden"></p>
-              <button type="submit" class="btn btn-primary btn-full" style="margin-top:var(--space-4)">
-                Truy cập Dashboard →
-              </button>
-            </form>
-            <p class="admin-gate-note">
-              Chỉ tài khoản được phân quyền mới có thể truy cập trang này.<br>
-              Liên hệ admin nếu cần thêm quyền.
-            </p>
-          </div>
-        </div>
+        <!-- Dashboard Content (all users) -->
+        <div id="dashboardContent">
 
-        <!-- Dashboard Content -->
-        <div id="dashboardContent" class="hidden">
-
-          <!-- KPI Row -->
-          <div class="kpi-row" role="list" aria-label="Thống kê tổng quan">
+          <!-- KPI Row — admin only -->
+          <div class="kpi-row" role="list" aria-label="Thống kê tổng quan" id="kpiRow" style="display:none">
             <div class="kpi-card" id="kpiTotal" role="listitem">
               <div class="kpi-icon" aria-hidden="true">
-                <!-- chart-bar-square icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
                 </svg>
@@ -197,7 +140,6 @@
             </div>
             <div class="kpi-card kpi-success" id="kpiApproved" role="listitem">
               <div class="kpi-icon" aria-hidden="true">
-                <!-- check-circle icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -207,7 +149,6 @@
             </div>
             <div class="kpi-card kpi-warning" id="kpiPending" role="listitem">
               <div class="kpi-icon" aria-hidden="true">
-                <!-- clock icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -217,7 +158,6 @@
             </div>
             <div class="kpi-card kpi-info" id="kpiHours" role="listitem">
               <div class="kpi-icon" aria-hidden="true">
-                <!-- bolt icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                 </svg>
@@ -229,106 +169,90 @@
 
           <!-- Tab Navigation -->
           <div class="dash-tabs" role="tablist" aria-label="Phần dashboard">
-            <button class="dash-tab active" data-tab="overview"
-                    role="tab" aria-selected="true" id="tab-btn-overview">
+            <!-- Admin tabs -->
+            <button class="dash-tab admin-only" data-tab="overview" role="tab" aria-selected="false" id="tab-btn-overview" style="display:none">
               Tổng quan
             </button>
-            <button class="dash-tab" data-tab="pending"
-                    role="tab" aria-selected="false" id="tab-btn-pending">
+            <button class="dash-tab admin-only" data-tab="pending" role="tab" aria-selected="false" id="tab-btn-pending" style="display:none">
               Chờ duyệt
               <span class="tab-badge" id="pendingBadge" aria-label="số use case chờ duyệt"></span>
             </button>
-            <button class="dash-tab" data-tab="all"
-                    role="tab" aria-selected="false" id="tab-btn-all">
+            <button class="dash-tab admin-only" data-tab="all" role="tab" aria-selected="false" id="tab-btn-all" style="display:none">
               Tất cả use case
+            </button>
+            <!-- Available to all -->
+            <button class="dash-tab" data-tab="my" role="tab" aria-selected="true" id="tab-btn-my">
+              Use Case của tôi
             </button>
           </div>
 
-          <!-- Tab: Tổng quan -->
-          <div id="tab-overview" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-overview">
-
+          <!-- Tab: Tổng quan (admin only) -->
+          <div id="tab-overview" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-btn-overview">
             <div class="dash-grid-2">
               <div class="dash-card">
-                <div class="dash-card-header">
-                  <h3>Phân bổ trạng thái</h3>
-                </div>
+                <div class="dash-card-header"><h3>Phân bổ trạng thái</h3></div>
                 <div id="statusChart" class="chart-container">
                   <canvas aria-label="Biểu đồ phân bổ trạng thái" role="img"></canvas>
                 </div>
               </div>
-
               <div class="dash-card">
-                <div class="dash-card-header">
-                  <h3>Phân bổ theo Team</h3>
-                </div>
+                <div class="dash-card-header"><h3>Phân bổ theo Team</h3></div>
                 <div id="teamChart" class="chart-container">
                   <canvas aria-label="Biểu đồ phân bổ theo team" role="img"></canvas>
                 </div>
               </div>
             </div>
-
             <div class="dash-card">
-              <div class="dash-card-header">
-                <h3>Phân bổ theo Lĩnh vực nghiệp vụ</h3>
-              </div>
+              <div class="dash-card-header"><h3>Phân bổ theo Lĩnh vực nghiệp vụ</h3></div>
               <div id="categoryChart" class="chart-container">
                 <canvas aria-label="Biểu đồ phân bổ theo lĩnh vực" role="img"></canvas>
               </div>
             </div>
-
             <div class="dash-card">
               <div class="dash-card-header">
                 <h3>Nộp gần đây</h3>
                 <span id="refreshedAt" class="dash-card-meta"></span>
               </div>
               <table id="recentTable" class="dash-table" aria-label="Danh sách use case nộp gần đây">
-                <thead>
-                  <tr>
-                    <th>Mã</th>
-                    <th>Tên Use Case</th>
-                    <th>Team</th>
-                    <th>Ngày nộp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td colspan="4" class="empty-cell">Đang tải...</td></tr>
-                </tbody>
+                <thead><tr><th>Mã</th><th>Tên Use Case</th><th>Team</th><th>Ngày nộp</th></tr></thead>
+                <tbody><tr><td colspan="4" class="empty-cell">Đang tải...</td></tr></tbody>
               </table>
             </div>
+          </div>
 
-          </div><!-- /tab-overview -->
-
-          <!-- Tab: Chờ duyệt -->
+          <!-- Tab: Chờ duyệt (admin only) -->
           <div id="tab-pending" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-btn-pending">
             <div id="pendingList">
               <div class="empty-state"><p class="empty-state-text">Đang tải...</p></div>
             </div>
           </div>
 
-          <!-- Tab: Tất cả use case -->
+          <!-- Tab: Tất cả use case (admin only) -->
           <div id="tab-all" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-btn-all">
             <div class="dash-card">
               <div class="dash-card-header">
                 <h3>Tất cả use case</h3>
                 <div class="search-box">
-                  <input type="search" id="searchInput" class="search-input"
-                         placeholder="Tìm theo tên, người đăng ký, team..."
-                         aria-label="Tìm kiếm use case">
+                  <input type="search" id="searchInput" class="search-input" placeholder="Tìm theo tên, người đăng ký, team..." aria-label="Tìm kiếm use case">
                 </div>
               </div>
               <table id="allTable" class="dash-table" aria-label="Danh sách tất cả use case">
-                <thead>
-                  <tr>
-                    <th>Mã</th>
-                    <th>Tên Use Case</th>
-                    <th>Người đăng ký</th>
-                    <th>Team</th>
-                    <th>Trạng thái</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td colspan="5" class="empty-cell">Chọn tab để tải dữ liệu</td></tr>
-                </tbody>
+                <thead><tr><th>Mã</th><th>Tên Use Case</th><th>Người đăng ký</th><th>Team</th><th>Trạng thái</th><th></th></tr></thead>
+                <tbody><tr><td colspan="6" class="empty-cell">Chọn tab để tải dữ liệu</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab: Use Case của tôi (all users) -->
+          <div id="tab-my" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-my">
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <h3>Use Case của tôi</h3>
+                <a href="register.html" class="btn btn-sm btn-primary">+ Đăng ký mới</a>
+              </div>
+              <table id="myTable" class="dash-table" aria-label="Danh sách use case của tôi">
+                <thead><tr><th>Mã</th><th>Tên Use Case</th><th>Trạng thái</th><th>Ngày nộp</th><th></th></tr></thead>
+                <tbody><tr><td colspan="5" class="empty-cell">Đang tải...</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -336,9 +260,7 @@
         </div><!-- /dashboardContent -->
 
       </div><!-- /app-content -->
-
     </div><!-- /app-main -->
-
   </div><!-- /app-layout -->
 
   <!-- Loading Overlay -->
@@ -350,7 +272,50 @@
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
 
-  <!-- Approval Modal -->
+  <!-- ── US Detail Modal ── -->
+  <div id="usDetailModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+    <div class="modal-card modal-card--wide">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:var(--space-3);flex:1;min-width:0">
+          <h3 id="detailModalTitle" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Chi tiết Use Case</h3>
+          <span id="detailModalId" class="id-badge" style="flex-shrink:0"></span>
+          <span id="detailModalStatus" class="status-badge" style="flex-shrink:0"></span>
+        </div>
+        <button class="modal-close" id="detailModalCloseBtn" aria-label="Đóng">×</button>
+      </div>
+
+      <!-- Detail view -->
+      <div class="modal-body" id="detailView">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Footer: action state (approve/reject area) — hidden by default -->
+      <div id="detailActionArea" style="display:none;padding:var(--space-5);border-top:1px solid var(--color-border)">
+        <div class="form-group" style="margin-bottom:var(--space-3)">
+          <label class="field-label" for="detailActionComment">
+            Nhận xét
+            <span id="detailActionNote" class="field-required-mark" style="display:none">*</span>
+          </label>
+          <textarea id="detailActionComment" rows="3" class="form-control" placeholder="Nhận xét về use case này..."></textarea>
+        </div>
+        <div style="display:flex;gap:var(--space-3);justify-content:flex-end">
+          <button class="btn btn-outline" id="detailActionCancelBtn">← Hủy</button>
+          <button class="btn btn-primary" id="detailActionConfirmBtn">Xác nhận</button>
+        </div>
+      </div>
+
+      <!-- Footer: main buttons -->
+      <div class="modal-footer" id="detailModalFooter">
+        <a id="detailEditBtn" href="#" class="btn btn-outline" style="display:none">✏️ Chỉnh sửa</a>
+        <div style="flex:1"></div>
+        <button class="btn btn-outline" id="detailCloseBtn">Đóng</button>
+        <button class="btn btn-danger" id="detailRejectBtn" style="display:none">✕ Từ chối</button>
+        <button class="btn btn-success" id="detailApproveBtn" style="display:none">✓ Duyệt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Approval Confirm Modal (legacy, kept for backward compat) -->
   <div id="approvalModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-card">
       <div class="modal-header">
@@ -364,8 +329,7 @@
             Nhận xét
             <span id="rejectNote" class="reject-required hidden">(bắt buộc khi từ chối)</span>
           </label>
-          <textarea id="modalComment" rows="3"
-                    placeholder="Nhận xét về use case này..."></textarea>
+          <textarea id="modalComment" rows="3" placeholder="Nhận xét về use case này..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -383,33 +347,18 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script src="assets/js/dashboard.js"></script>
 
-  <!-- Sidebar toggle (mobile) -->
+  <!-- Sidebar toggle -->
   <script>
     (function () {
       'use strict';
-      var sidebar  = document.getElementById('appSidebar');
-      var overlay  = document.getElementById('sidebarOverlay');
-      var toggle   = document.getElementById('sidebarToggle');
-
-      function openSidebar() {
-        sidebar.classList.add('is-open');
-        overlay.classList.add('is-visible');
-        toggle.setAttribute('aria-expanded', 'true');
-      }
-      function closeSidebar() {
-        sidebar.classList.remove('is-open');
-        overlay.classList.remove('is-visible');
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-
-      if (toggle)  toggle.addEventListener('click', function () {
-        sidebar.classList.contains('is-open') ? closeSidebar() : openSidebar();
-      });
+      var sidebar = document.getElementById('appSidebar');
+      var overlay = document.getElementById('sidebarOverlay');
+      var toggle  = document.getElementById('sidebarToggle');
+      function openSidebar()  { sidebar.classList.add('is-open');    overlay.classList.add('is-visible');    toggle.setAttribute('aria-expanded','true'); }
+      function closeSidebar() { sidebar.classList.remove('is-open'); overlay.classList.remove('is-visible'); toggle.setAttribute('aria-expanded','false'); }
+      if (toggle)  toggle.addEventListener('click', function () { sidebar.classList.contains('is-open') ? closeSidebar() : openSidebar(); });
       if (overlay) overlay.addEventListener('click', closeSidebar);
-
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeSidebar();
-      });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSidebar(); });
     })();
   </script>
 </body>

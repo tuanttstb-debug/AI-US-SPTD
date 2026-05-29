@@ -7,7 +7,6 @@
   <title>Dashboard Quản lý — AI Use Case</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
 
-  <!-- Reuse design system — không load wizard.css (wizard-only) -->
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/typography.css">
@@ -20,217 +19,302 @@
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="app-header">
-    <div class="logo">🚀 Bình dân hóa AI</div>
-    <div class="header-divider"></div>
-    <div class="header-title">Dashboard Quản lý</div>
-    <div id="headerAdminActions" class="header-actions hidden">
-      <span id="adminEmailDisplay" class="admin-email-display"></span>
-      <button id="refreshBtn" class="btn btn-sm btn-outline" title="Làm mới dữ liệu">↻ Làm mới</button>
-      <button id="logoutBtn"  class="btn btn-sm btn-ghost">Đăng xuất</button>
-      <a href="register.html" class="btn btn-sm btn-primary">+ Đăng ký Use Case</a>
-      <a href="index.html"   class="btn btn-sm btn-ghost" style="color:rgba(255,255,255,0.85);border-color:rgba(255,255,255,0.3);">Trang chủ</a>
-    </div>
-  </header>
+  <!-- ══ Enterprise App Shell ══ -->
+  <div class="app-layout">
 
-  <main class="app-container">
+    <!-- ── Left Sidebar ── -->
+    <aside class="app-sidebar" id="appSidebar" role="navigation" aria-label="Điều hướng chính">
 
-    <!-- Admin Gate -->
-    <div id="adminGate" class="admin-gate-container">
-      <div class="admin-gate-card">
-        <div class="admin-gate-icon">🔐</div>
-        <h1 class="admin-gate-title">Dashboard Quản lý</h1>
-        <p class="admin-gate-desc">Nhập email công việc để xác thực quyền truy cập</p>
-        <form id="adminGateForm" class="admin-gate-form" novalidate>
-          <div class="form-group">
-            <label class="field-label" for="adminEmailInput">Email công việc <span class="field-required-mark" aria-label="bắt buộc">*</span></label>
-            <input type="email" id="adminEmailInput" name="adminEmail"
-                   class="form-control" placeholder="ten.ho@company.com"
-                   autocomplete="email" required>
+      <!-- Brand -->
+      <a href="index.html" class="sidebar-brand" aria-label="Trang chủ">
+        <div class="sidebar-brand-logo" aria-hidden="true">🚀</div>
+        <div class="sidebar-brand-text">
+          <span class="sidebar-brand-name">Bình dân hóa AI</span>
+          <span class="sidebar-brand-sub">TT SPTD</span>
+        </div>
+      </a>
+
+      <!-- Navigation -->
+      <nav class="sidebar-nav" role="menubar">
+
+        <span class="sidebar-section-label">Quản lý</span>
+
+        <a href="dashboard.html" class="sidebar-nav-item is-active" role="menuitem"
+           aria-current="page">
+          <i class="sidebar-nav-icon" aria-hidden="true">📊</i>
+          <span class="sidebar-nav-label">Dashboard</span>
+        </a>
+
+        <a href="register.html" class="sidebar-nav-item" role="menuitem">
+          <i class="sidebar-nav-icon" aria-hidden="true">➕</i>
+          <span class="sidebar-nav-label">Đăng ký Use Case</span>
+        </a>
+
+        <div class="sidebar-nav-item is-disabled" role="menuitem" aria-disabled="true"
+             style="opacity:0.5; cursor:default; pointer-events:none;">
+          <i class="sidebar-nav-icon" aria-hidden="true">📋</i>
+          <span class="sidebar-nav-label">Use Case của tôi</span>
+          <span class="sidebar-nav-badge" aria-hidden="true">Soon</span>
+        </div>
+
+        <div class="sidebar-divider" aria-hidden="true"></div>
+        <span class="sidebar-section-label">Hệ thống</span>
+
+        <a href="index.html" class="sidebar-nav-item" role="menuitem">
+          <i class="sidebar-nav-icon" aria-hidden="true">🏠</i>
+          <span class="sidebar-nav-label">Trang chủ</span>
+        </a>
+
+      </nav>
+
+      <!-- Sidebar footer: user info + logout -->
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar" id="sidebarAvatar" aria-hidden="true"></div>
+          <div class="sidebar-user-info">
+            <span class="sidebar-user-name" id="sidebarUserName"></span>
+            <span class="sidebar-user-role">Admin</span>
           </div>
-          <p id="adminGateError" class="admin-gate-error hidden"></p>
-          <button type="submit" class="btn btn-primary btn-full" style="margin-top:var(--space-4)">
-            Truy cập Dashboard →
+          <button class="sidebar-logout-btn" id="sidebarLogoutBtn"
+                  title="Đăng xuất" aria-label="Đăng xuất">
+            ⏻
           </button>
-        </form>
-        <p class="admin-gate-note">
-          Chỉ tài khoản được phân quyền mới có thể truy cập trang này.<br>
-          Liên hệ admin nếu cần thêm quyền.
-        </p>
+        </div>
+      </div>
+
+    </aside><!-- /app-sidebar -->
+
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+    <!-- ── Main Area ── -->
+    <div class="app-main">
+
+      <!-- TopBar -->
+      <header class="app-topbar" role="banner">
+        <button class="topbar-sidebar-toggle" id="sidebarToggle"
+                aria-label="Mở/đóng menu" aria-expanded="false"
+                aria-controls="appSidebar">
+          ☰
+        </button>
+        <h1 class="topbar-title" id="topbarTitle">Dashboard Quản lý</h1>
+        <div class="topbar-actions" id="topbarActions">
+          <button id="refreshBtn" class="topbar-icon-btn" title="Làm mới dữ liệu"
+                  aria-label="Làm mới dữ liệu">
+            ↻
+          </button>
+          <div class="topbar-user-chip" id="topbarUserChip" style="display:none">
+            <div class="topbar-user-avatar" id="topbarAvatar" aria-hidden="true"></div>
+            <span class="topbar-user-name" id="topbarUserName"></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="app-content">
+
+        <!-- Admin Gate -->
+        <div id="adminGate" class="admin-gate-container">
+          <div class="admin-gate-card">
+            <div class="admin-gate-icon" aria-hidden="true">🔐</div>
+            <h2 class="admin-gate-title">Xác thực quyền truy cập</h2>
+            <p class="admin-gate-desc">Nhập email công việc để mở Dashboard quản lý</p>
+            <form id="adminGateForm" class="admin-gate-form" novalidate>
+              <div class="form-group">
+                <label class="field-label" for="adminEmailInput">
+                  Email công việc
+                  <span class="field-required-mark" aria-label="bắt buộc">*</span>
+                </label>
+                <input type="email" id="adminEmailInput" name="adminEmail"
+                       class="form-control" placeholder="ten.ho@company.com"
+                       autocomplete="email" required>
+              </div>
+              <p id="adminGateError" class="admin-gate-error hidden"></p>
+              <button type="submit" class="btn btn-primary btn-full" style="margin-top:var(--space-4)">
+                Truy cập Dashboard →
+              </button>
+            </form>
+            <p class="admin-gate-note">
+              Chỉ tài khoản được phân quyền mới có thể truy cập trang này.<br>
+              Liên hệ admin nếu cần thêm quyền.
+            </p>
+          </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboardContent" class="hidden">
+
+          <!-- KPI Row -->
+          <div class="kpi-row" role="list" aria-label="Thống kê tổng quan">
+            <div class="kpi-card" id="kpiTotal" role="listitem">
+              <div class="kpi-icon" aria-hidden="true">📊</div>
+              <div class="kpi-value">--</div>
+              <div class="kpi-label">Tổng use case</div>
+            </div>
+            <div class="kpi-card kpi-success" id="kpiApproved" role="listitem">
+              <div class="kpi-icon" aria-hidden="true">✅</div>
+              <div class="kpi-value">--</div>
+              <div class="kpi-label">Đã duyệt</div>
+            </div>
+            <div class="kpi-card kpi-warning" id="kpiPending" role="listitem">
+              <div class="kpi-icon" aria-hidden="true">⏳</div>
+              <div class="kpi-value">--</div>
+              <div class="kpi-label">Chờ duyệt</div>
+            </div>
+            <div class="kpi-card kpi-info" id="kpiHours" role="listitem">
+              <div class="kpi-icon" aria-hidden="true">⏱️</div>
+              <div class="kpi-value">--</div>
+              <div class="kpi-label">Giờ tiết kiệm/tháng</div>
+            </div>
+          </div>
+
+          <!-- Tab Navigation -->
+          <div class="dash-tabs" role="tablist" aria-label="Phần dashboard">
+            <button class="dash-tab active" data-tab="overview"
+                    role="tab" aria-selected="true" id="tab-btn-overview">
+              Tổng quan
+            </button>
+            <button class="dash-tab" data-tab="pending"
+                    role="tab" aria-selected="false" id="tab-btn-pending">
+              Chờ duyệt
+              <span class="tab-badge" id="pendingBadge" aria-label="số use case chờ duyệt"></span>
+            </button>
+            <button class="dash-tab" data-tab="all"
+                    role="tab" aria-selected="false" id="tab-btn-all">
+              Tất cả use case
+            </button>
+          </div>
+
+          <!-- Tab: Tổng quan -->
+          <div id="tab-overview" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-overview">
+
+            <div class="dash-grid-2">
+              <div class="dash-card">
+                <div class="dash-card-header">
+                  <h3>Phân bổ trạng thái</h3>
+                </div>
+                <div id="statusChart" class="chart-container">
+                  <p class="empty-state-text">Đang tải...</p>
+                </div>
+              </div>
+
+              <div class="dash-card">
+                <div class="dash-card-header">
+                  <h3>Phân bổ theo Team</h3>
+                </div>
+                <div id="teamChart" class="chart-container">
+                  <p class="empty-state-text">Đang tải...</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <h3>Phân bổ theo Lĩnh vực nghiệp vụ</h3>
+              </div>
+              <div id="categoryChart" class="chart-container">
+                <p class="empty-state-text">Đang tải...</p>
+              </div>
+            </div>
+
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <h3>Nộp gần đây</h3>
+                <span id="refreshedAt" class="dash-card-meta"></span>
+              </div>
+              <table id="recentTable" class="dash-table" aria-label="Danh sách use case nộp gần đây">
+                <thead>
+                  <tr>
+                    <th>Mã</th>
+                    <th>Tên Use Case</th>
+                    <th>Team</th>
+                    <th>Ngày nộp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="4" class="empty-cell">Đang tải...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div><!-- /tab-overview -->
+
+          <!-- Tab: Chờ duyệt -->
+          <div id="tab-pending" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-btn-pending">
+            <div id="pendingList">
+              <div class="empty-state"><p class="empty-state-text">Đang tải...</p></div>
+            </div>
+          </div>
+
+          <!-- Tab: Tất cả use case -->
+          <div id="tab-all" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-btn-all">
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <h3>Tất cả use case</h3>
+                <div class="search-box">
+                  <input type="search" id="searchInput" class="search-input"
+                         placeholder="Tìm theo tên, người đăng ký, team..."
+                         aria-label="Tìm kiếm use case">
+                </div>
+              </div>
+              <table id="allTable" class="dash-table" aria-label="Danh sách tất cả use case">
+                <thead>
+                  <tr>
+                    <th>Mã</th>
+                    <th>Tên Use Case</th>
+                    <th>Người đăng ký</th>
+                    <th>Team</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="5" class="empty-cell">Chọn tab để tải dữ liệu</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div><!-- /dashboardContent -->
+
+      </div><!-- /app-content -->
+
+    </div><!-- /app-main -->
+
+  </div><!-- /app-layout -->
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay hidden" role="status" aria-label="Đang tải">
+    <div class="spinner" aria-hidden="true"></div>
+    <span class="loading-label">Đang tải...</span>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- Approval Modal -->
+  <div id="approvalModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle">Xác nhận</h3>
+        <button class="modal-close" id="modalCancelBtn" aria-label="Đóng">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="modalBody"></p>
+        <div class="form-group">
+          <label class="field-label" for="modalComment">
+            Nhận xét
+            <span id="rejectNote" class="reject-required hidden">(bắt buộc khi từ chối)</span>
+          </label>
+          <textarea id="modalComment" rows="3"
+                    placeholder="Nhận xét về use case này..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="document.getElementById('modalCancelBtn').click()">Hủy</button>
+        <button class="btn btn-success" id="modalConfirmBtn">Xác nhận duyệt</button>
       </div>
     </div>
-
-    <!-- Dashboard Content (hidden until authenticated) -->
-    <div id="dashboardContent" class="hidden">
-
-      <!-- KPI Row -->
-      <div class="kpi-row">
-        <div class="kpi-card" id="kpiTotal">
-          <div class="kpi-icon">📊</div>
-          <div class="kpi-value">--</div>
-          <div class="kpi-label">Tổng use case</div>
-        </div>
-        <div class="kpi-card kpi-success" id="kpiApproved">
-          <div class="kpi-icon">✅</div>
-          <div class="kpi-value">--</div>
-          <div class="kpi-label">Đã duyệt</div>
-        </div>
-        <div class="kpi-card kpi-warning" id="kpiPending">
-          <div class="kpi-icon">⏳</div>
-          <div class="kpi-value">--</div>
-          <div class="kpi-label">Chờ duyệt</div>
-        </div>
-        <div class="kpi-card kpi-info" id="kpiHours">
-          <div class="kpi-icon">⏱️</div>
-          <div class="kpi-value">--</div>
-          <div class="kpi-label">Giờ tiết kiệm/tháng</div>
-        </div>
-      </div>
-
-      <!-- Tab Navigation -->
-      <div class="dash-tabs" role="tablist" aria-label="Phần dashboard">
-        <button class="dash-tab active" data-tab="overview" role="tab" aria-selected="true">
-          Tổng quan
-        </button>
-        <button class="dash-tab" data-tab="pending" role="tab" aria-selected="false">
-          Chờ duyệt
-          <span class="tab-badge" id="pendingBadge" aria-label="số use case chờ duyệt"></span>
-        </button>
-        <button class="dash-tab" data-tab="all" role="tab" aria-selected="false">
-          Tất cả use case
-        </button>
-      </div>
-
-      <!-- Tab: Tổng quan -->
-      <div id="tab-overview" class="tab-panel" role="tabpanel">
-
-        <div class="dash-grid-2">
-          <!-- Status Chart -->
-          <div class="dash-card">
-            <div class="dash-card-header">
-              <h3>Phân bổ trạng thái</h3>
-            </div>
-            <div id="statusChart" class="chart-container">
-              <p class="empty-state-text">Đang tải...</p>
-            </div>
-          </div>
-
-          <!-- Team Chart -->
-          <div class="dash-card">
-            <div class="dash-card-header">
-              <h3>Phân bổ theo Team</h3>
-            </div>
-            <div id="teamChart" class="chart-container">
-              <p class="empty-state-text">Đang tải...</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Category Chart -->
-        <div class="dash-card">
-          <div class="dash-card-header">
-            <h3>Phân bổ theo Lĩnh vực nghiệp vụ</h3>
-          </div>
-          <div id="categoryChart" class="chart-container">
-            <p class="empty-state-text">Đang tải...</p>
-          </div>
-        </div>
-
-        <!-- Recent Submissions -->
-        <div class="dash-card">
-          <div class="dash-card-header">
-            <h3>Nộp gần đây</h3>
-            <span id="refreshedAt" class="dash-card-meta"></span>
-          </div>
-          <table id="recentTable" class="dash-table" aria-label="Danh sách use case nộp gần đây">
-            <thead>
-              <tr>
-                <th>Mã</th>
-                <th>Tên Use Case</th>
-                <th>Team</th>
-                <th>Ngày nộp</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="4" class="empty-cell">Đang tải...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tab: Chờ duyệt -->
-      <div id="tab-pending" class="tab-panel hidden" role="tabpanel">
-        <div id="pendingList">
-          <div class="empty-state"><p class="empty-state-text">Đang tải...</p></div>
-        </div>
-      </div>
-
-      <!-- Tab: Tất cả use case -->
-      <div id="tab-all" class="tab-panel hidden" role="tabpanel">
-        <div class="dash-card">
-          <div class="dash-card-header">
-            <h3>Tất cả use case</h3>
-            <div class="search-box">
-              <input type="search" id="searchInput" class="search-input"
-                     placeholder="Tìm theo tên, người đăng ký, team..."
-                     aria-label="Tìm kiếm use case">
-            </div>
-          </div>
-          <table id="allTable" class="dash-table" aria-label="Danh sách tất cả use case">
-            <thead>
-              <tr>
-                <th>Mã</th>
-                <th>Tên Use Case</th>
-                <th>Người đăng ký</th>
-                <th>Team</th>
-                <th>Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="5" class="empty-cell">Chọn tab để tải dữ liệu</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div><!-- /dashboardContent -->
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay hidden" role="status" aria-label="Đang tải">
-      <div class="spinner" aria-hidden="true"></div>
-      <span class="loading-label">Đang tải...</span>
-    </div>
-
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
-
-    <!-- Approval Modal -->
-    <div id="approvalModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3 id="modalTitle">Xác nhận</h3>
-          <button class="modal-close" id="modalCancelBtn" aria-label="Đóng">×</button>
-        </div>
-        <div class="modal-body">
-          <p id="modalBody"></p>
-          <div class="form-group">
-            <label class="field-label" for="modalComment">
-              Nhận xét
-              <span id="rejectNote" class="reject-required hidden">(bắt buộc khi từ chối)</span>
-            </label>
-            <textarea id="modalComment" rows="3"
-                      placeholder="Nhận xét về use case này (tùy chọn khi duyệt, bắt buộc khi từ chối)..."></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline" onclick="document.getElementById('modalCancelBtn').click()">Hủy</button>
-          <button class="btn btn-success" id="modalConfirmBtn">Xác nhận duyệt</button>
-        </div>
-      </div>
-    </div>
-
-  </main>
+  </div>
 
   <!-- JS -->
   <script src="config/env.js"></script>
@@ -238,5 +322,35 @@
   <script src="config/routes.js"></script>
   <script src="assets/js/api.js"></script>
   <script src="assets/js/dashboard.js"></script>
+
+  <!-- Sidebar toggle (mobile) -->
+  <script>
+    (function () {
+      'use strict';
+      var sidebar  = document.getElementById('appSidebar');
+      var overlay  = document.getElementById('sidebarOverlay');
+      var toggle   = document.getElementById('sidebarToggle');
+
+      function openSidebar() {
+        sidebar.classList.add('is-open');
+        overlay.classList.add('is-visible');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+      function closeSidebar() {
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-visible');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+
+      if (toggle)  toggle.addEventListener('click', function () {
+        sidebar.classList.contains('is-open') ? closeSidebar() : openSidebar();
+      });
+      if (overlay) overlay.addEventListener('click', closeSidebar);
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeSidebar();
+      });
+    })();
+  </script>
 </body>
 </html>

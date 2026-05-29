@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Đăng nhập — AI Use Case Platform TT SPTD">
+  <title>Đăng nhập — AI Use Case Platform</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/typography.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/states.css">
+  <link rel="stylesheet" href="assets/css/login.css">
+</head>
+<body class="login-page">
+
+  <!-- Header -->
+  <header class="login-header" role="banner">
+    <div class="login-brand">
+      <span class="login-brand-icon" aria-hidden="true">🚀</span>
+      <span class="login-brand-name">Bình dân hóa AI</span>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="login-main" role="main">
+    <div class="login-card" role="region" aria-label="Đăng nhập">
+
+      <!-- Card top (purple) -->
+      <div class="login-card-top">
+        <div class="login-card-icon" aria-hidden="true">🔐</div>
+        <h1 class="login-card-title">Đăng nhập</h1>
+        <p class="login-card-subtitle">
+          Hệ thống quản lý AI Use Case<br>
+          Trung tâm Sản phẩm &amp; Dịch vụ
+        </p>
+      </div>
+
+      <!-- Card body -->
+      <div class="login-card-body">
+        <form id="loginForm" novalidate autocomplete="on" aria-label="Form đăng nhập">
+
+          <div class="login-field">
+            <label class="login-label" for="loginEmail">
+              Email công việc
+              <span style="color:var(--color-error)" aria-label="bắt buộc">*</span>
+            </label>
+            <input
+              type="email"
+              id="loginEmail"
+              name="email"
+              class="login-input"
+              placeholder="ten.ho@company.com"
+              autocomplete="email"
+              required
+              autofocus
+              aria-required="true"
+              aria-describedby="loginEmailError"
+            >
+            <p id="loginEmailError" class="login-field-error" role="alert" aria-live="polite">
+              <span aria-hidden="true">✕</span>
+              <span id="loginEmailErrorMsg"></span>
+            </p>
+          </div>
+
+          <button type="submit" id="loginBtn" class="login-btn">
+            <span class="login-btn-spinner" aria-hidden="true"></span>
+            <span class="login-btn-label">Đăng nhập →</span>
+          </button>
+
+        </form>
+
+        <p class="login-note">
+          Chỉ tài khoản nội bộ TT SPTD được phép đăng nhập.<br>
+          Liên hệ quản trị nếu cần hỗ trợ quyền truy cập.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="config/env.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      // If already logged in → go to return URL or portal
+      var existingUser = AuthService.getUser();
+      if (existingUser) {
+        var sp = new URLSearchParams(window.location.search);
+        var ret = sp.get('return') || 'index.html';
+        // Allow only safe relative paths (no protocol, no //, no JS)
+        window.location.replace(/^[a-zA-Z0-9_\-./]+$/.test(ret) ? ret : 'index.html');
+        return;
+      }
+
+      var emailEl   = document.getElementById('loginEmail');
+      var errorEl   = document.getElementById('loginEmailError');
+      var errorMsg  = document.getElementById('loginEmailErrorMsg');
+      var loginBtn  = document.getElementById('loginBtn');
+
+      function showError(msg) {
+        errorMsg.textContent = msg;
+        errorEl.classList.add('visible');
+        emailEl.classList.add('has-error');
+        emailEl.setAttribute('aria-invalid', 'true');
+        emailEl.focus();
+      }
+
+      function clearError() {
+        errorEl.classList.remove('visible');
+        emailEl.classList.remove('has-error');
+        emailEl.removeAttribute('aria-invalid');
+      }
+
+      function setLoading(on) {
+        loginBtn.classList.toggle('is-loading', on);
+        loginBtn.disabled = on;
+      }
+
+      emailEl.addEventListener('input', clearError);
+
+      document.getElementById('loginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        var result = AuthService.login((emailEl.value || '').trim());
+        if (!result.success) {
+          showError(result.error);
+          return;
+        }
+
+        setLoading(true);
+        // Brief delay for UX feedback; swap for real async auth call here
+        setTimeout(function () {
+          var sp  = new URLSearchParams(window.location.search);
+          var ret = sp.get('return') || 'index.html';
+          window.location.replace(/^[a-zA-Z0-9_\-./]+$/.test(ret) ? ret : 'index.html');
+        }, 380);
+      });
+    })();
+  </script>
+
+</body>
+</html>

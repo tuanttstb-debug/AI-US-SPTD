@@ -63,8 +63,7 @@
     var params = new URLSearchParams(window.location.search);
     if (params.has('edit')) return;
     FormMapper.populateData({
-      Owner_Name:  user.displayName || user.email,
-      Owner_Email: user.email
+      Owner_Name: user.displayName || user.email
     });
   }
 
@@ -146,7 +145,12 @@
 
   /* ── Form Submission ── */
   async function submitForm() {
-    const data   = FormMapper.collectData();
+    const data = FormMapper.collectData();
+    // Inject Owner_Email từ session (field ẩn, không render trên UI)
+    if (typeof AuthService !== 'undefined') {
+      var _u = AuthService.getUser();
+      if (_u && _u.email && !data.Owner_Email) data.Owner_Email = _u.email;
+    }
     const errors = Validator.all(data);
     if (errors.length) {
       Toast.show(errors.join('\n'), 'error');

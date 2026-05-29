@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────
-   FIELDS — field name constants (unchanged, maps to Google Sheets columns)
+   FIELDS — tên cột Google Sheets (KHÔNG đổi — ảnh hưởng API contract)
    ───────────────────────────────────────── */
 var FIELDS = {
   USE_CASE_NAME:       'UseCase_Name',
@@ -7,6 +7,7 @@ var FIELDS = {
   OWNER_EMAIL:         'Owner_Email',
   TEAM:                'Team',
   BUSINESS_CATEGORY:   'Business_Category',
+  CURRENT_STAGE:       'Current_Stage',      // ← THÊM MỚI: Stage S1-S4
   PAIN_POINT:          'Pain_Point',
   CURRENT_PROCESS:     'Current_Process',
   CURRENT_TIME_MIN:    'Current_Time_Min',
@@ -37,8 +38,7 @@ var FIELDS = {
 };
 
 /* ─────────────────────────────────────────
-   STEPS — wizard step definitions (extended: added shortTitle)
-   .fields order is preserved — matches data collection order
+   STEPS — cấu trúc wizard 4 bước
    ───────────────────────────────────────── */
 var STEPS = [
   {
@@ -47,9 +47,17 @@ var STEPS = [
     shortTitle: 'Nghiệp vụ',
     subtitle: 'Mô tả bài toán cần giải quyết bằng AI',
     fields: [
-      FIELDS.USE_CASE_NAME, FIELDS.OWNER_NAME, FIELDS.OWNER_EMAIL, FIELDS.TEAM,
-      FIELDS.BUSINESS_CATEGORY, FIELDS.PAIN_POINT, FIELDS.CURRENT_PROCESS,
-      FIELDS.CURRENT_TIME_MIN, FIELDS.CURRENT_PROBLEM, FIELDS.USER_TYPE,
+      FIELDS.USE_CASE_NAME,
+      FIELDS.OWNER_NAME,
+      FIELDS.OWNER_EMAIL,
+      FIELDS.TEAM,
+      FIELDS.BUSINESS_CATEGORY,
+      FIELDS.CURRENT_STAGE,       // ← Stage S1-S4
+      FIELDS.PAIN_POINT,
+      FIELDS.CURRENT_PROCESS,
+      FIELDS.CURRENT_TIME_MIN,
+      FIELDS.CURRENT_PROBLEM,
+      FIELDS.USER_TYPE,
       FIELDS.EXPECTED_GOALS
     ]
   },
@@ -59,9 +67,16 @@ var STEPS = [
     shortTitle: 'AI & Prompt',
     subtitle: 'Mô tả cách AI xử lý bài toán',
     fields: [
-      FIELDS.FLOW_DESC, FIELDS.INPUT_TYPES, FIELDS.PROMPT_ROLE, FIELDS.PROMPT_TASK,
-      FIELDS.PROMPT_GOAL, FIELDS.PROMPT_CONTEXT, FIELDS.PROMPT_INPUT,
-      FIELDS.PROMPT_STEPS, FIELDS.PROMPT_OUTPUT_FORMAT, FIELDS.PROMPT_EVALUATION
+      FIELDS.FLOW_DESC,
+      FIELDS.INPUT_TYPES,
+      FIELDS.PROMPT_ROLE,
+      FIELDS.PROMPT_TASK,
+      FIELDS.PROMPT_GOAL,
+      FIELDS.PROMPT_CONTEXT,
+      FIELDS.PROMPT_INPUT,
+      FIELDS.PROMPT_STEPS,
+      FIELDS.PROMPT_OUTPUT_FORMAT,
+      FIELDS.PROMPT_EVALUATION
     ]
   },
   {
@@ -70,9 +85,14 @@ var STEPS = [
     shortTitle: 'Demo',
     subtitle: 'Đánh giá hiệu quả và khả năng nhân rộng',
     fields: [
-      FIELDS.DEMO_STATUS, FIELDS.DEMO_LINK, FIELDS.BEFORE_TIME_MIN,
-      FIELDS.AFTER_TIME_MIN, FIELDS.QUALITY_IMPROVEMENT, FIELDS.IMPROVEMENT_NOTE,
-      FIELDS.REUSE_LEVEL, FIELDS.REUSE_ADJUSTMENT
+      FIELDS.DEMO_STATUS,
+      FIELDS.DEMO_LINK,
+      FIELDS.BEFORE_TIME_MIN,
+      FIELDS.AFTER_TIME_MIN,
+      FIELDS.QUALITY_IMPROVEMENT,
+      FIELDS.IMPROVEMENT_NOTE,
+      FIELDS.REUSE_LEVEL,
+      FIELDS.REUSE_ADJUSTMENT
     ]
   },
   {
@@ -81,14 +101,15 @@ var STEPS = [
     shortTitle: 'Hướng dẫn',
     subtitle: 'Giúp đồng nghiệp tái sử dụng use case này',
     fields: [
-      FIELDS.WHEN_TO_USE, FIELDS.USAGE_STEPS, FIELDS.USAGE_NOTES
+      FIELDS.WHEN_TO_USE,
+      FIELDS.USAGE_STEPS,
+      FIELDS.USAGE_NOTES
     ]
   }
 ];
 
 /* ─────────────────────────────────────────
-   GROUP_CONFIG — field group metadata within each step
-   collapsible groups use <details> element
+   GROUP_CONFIG — nhóm field trong mỗi step
    ───────────────────────────────────────── */
 var GROUP_CONFIG = {
   identity: { label: 'Thông tin cơ bản' },
@@ -108,8 +129,9 @@ var GROUP_CONFIG = {
 };
 
 /* ─────────────────────────────────────────
-   FIELD_CONFIG — per-field UI metadata
-   Keys MUST match values in FIELDS (Google Sheets column names)
+   FIELD_CONFIG — metadata UI từng field
+   lookupKey phải khớp với key trong window.__LOOKUP
+   (sau khi GAS đã map CATEGORY→fieldName)
    ───────────────────────────────────────── */
 var FIELD_CONFIG = {
 
@@ -131,17 +153,17 @@ var FIELD_CONFIG = {
     group: 'identity'
   },
   Owner_Email: {
-    label: 'Email công việc',
-    type: 'email',
+    label: 'Mã người đăng ký',
+    type: 'text',
     required: true,
-    placeholder: 'ten.ho@company.com',
+    placeholder: 'VD: tuantt4',
     group: 'identity'
   },
   Team: {
     label: 'Team',
     type: 'select',
     required: true,
-    lookupKey: 'Team',
+    lookupKey: 'Team',          // GAS map TEAM → Team
     group: 'identity'
   },
   Business_Category: {
@@ -151,6 +173,14 @@ var FIELD_CONFIG = {
     lookupKey: 'Business_Category',
     group: 'identity'
   },
+  Current_Stage: {              // ← THÊM MỚI
+    label: 'Giai đoạn (Stage)',
+    type: 'select',
+    lookupKey: 'Current_Stage', // GAS map STAGE → Current_Stage
+    helper: 'Tự đánh giá use case đang ở giai đoạn nào trong lộ trình AI',
+    group: 'identity'
+  },
+
   Pain_Point: {
     label: 'Điểm đau nghiệp vụ',
     type: 'textarea',
@@ -184,6 +214,7 @@ var FIELD_CONFIG = {
     placeholder: 'Sai sót xảy ra như thế nào? Chi phí ẩn, rủi ro nghiệp vụ là gì?',
     group: 'problem'
   },
+
   User_Type: {
     label: 'Đối tượng sử dụng',
     type: 'checkbox',
@@ -193,7 +224,7 @@ var FIELD_CONFIG = {
   Expected_Goals: {
     label: 'Mục tiêu kỳ vọng',
     type: 'checkbox',
-    lookupKey: 'Expected_Goals',
+    lookupKey: 'Expected_Goals', // GAS map GOAL → Expected_Goals
     group: 'audience'
   },
 
@@ -215,7 +246,6 @@ var FIELD_CONFIG = {
     group: 'flow'
   },
 
-  /* Prompt group — collapsible */
   Prompt_Role: {
     label: 'Vai trò AI (Role)',
     type: 'textarea',
@@ -286,7 +316,7 @@ var FIELD_CONFIG = {
   Demo_Status: {
     label: 'Trạng thái demo',
     type: 'select',
-    options: ['Chưa có', 'Đã có demo', 'Đã triển khai'],
+    options: ['Chưa có', 'Đã có demo', 'Đã triển khai thử', 'Đã triển khai chính thức'],
     group: 'demo'
   },
   Demo_Link: {
@@ -329,7 +359,7 @@ var FIELD_CONFIG = {
   Reuse_Level: {
     label: 'Phạm vi tái sử dụng',
     type: 'checkbox',
-    lookupKey: 'Reuse_Level',
+    lookupKey: 'Reuse_Level',   // GAS map REUSE → Reuse_Level
     group: 'reuse'
   },
   Reuse_Adjustment: {

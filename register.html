@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Đăng ký và quản lý AI Use Case nội bộ TT SPTD">
+  <title>Đăng ký AI Use Case — TT SPTD</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <link rel="shortcut icon"   href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+
+  <!-- CSS (load order matters) -->
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/typography.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/forms.css">
+  <link rel="stylesheet" href="assets/css/wizard.css">
+  <link rel="stylesheet" href="assets/css/states.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <a href="index.html" class="logo" style="text-decoration:none;color:white;" aria-label="Quay về trang chủ">
+      🚀 Bình dân hóa AI
+    </a>
+    <div class="header-divider"></div>
+    <div class="header-title">Đăng ký AI Use Case</div>
+    <div style="flex:1"></div>
+    <a href="index.html" class="btn btn-sm btn-ghost"
+       style="color:rgba(255,255,255,0.85);border-color:rgba(255,255,255,0.3);"
+       aria-label="Quay về trang chủ">
+      ← Trang chủ
+    </a>
+  </header>
+
+  <main class="app-container">
+
+    <!-- Wizard Card -->
+    <div class="wizard" id="wizardCard">
+
+      <!-- Progress Track -->
+      <div class="progress-track">
+        <div class="progress-fill" id="progressBar"></div>
+      </div>
+
+      <!-- Draft Restore Banner -->
+      <div id="draftBanner" class="draft-banner hidden" role="alert" aria-live="polite">
+        <div class="draft-banner-content">
+          <span style="font-size:1.2rem;">📝</span>
+          <div class="draft-banner-text">
+            <span class="draft-banner-title">Bạn có bản nháp chưa hoàn thành</span>
+            <span class="draft-banner-sub">Tiếp tục từ lần trước hay bắt đầu lại?</span>
+          </div>
+        </div>
+        <div class="draft-banner-actions">
+          <button id="draftRestoreBtn" class="btn btn-sm btn-primary">Tiếp tục</button>
+          <button id="draftDiscardBtn" class="btn btn-sm btn-ghost">Bỏ qua</button>
+        </div>
+      </div>
+
+      <!-- Edit Mode Banner -->
+      <div id="editModeBanner" class="edit-mode-banner hidden" role="status">
+        <span class="edit-mode-banner-icon">✏️</span>
+        <span class="edit-mode-banner-text">Đang chỉnh sửa use case — <strong id="editModeId"></strong></span>
+      </div>
+
+      <!-- Step Indicators -->
+      <div class="step-indicators" id="stepIndicators" role="navigation" aria-label="Các bước điền form"></div>
+
+      <!-- Wizard Meta -->
+      <div class="wizard-meta">
+        <span class="step-counter" id="stepCounter" aria-live="polite">Bước 1 / 4</span>
+        <span class="autosave-badge" id="autosaveBadge" aria-live="polite" aria-atomic="true"></span>
+      </div>
+
+      <!-- Form Steps (injected by wizard.js) -->
+      <div class="wizard-body">
+        <form id="useCaseForm" novalidate aria-label="Form đăng ký AI Use Case">
+          <!-- Steps injected dynamically by Wizard.renderSteps() -->
+        </form>
+      </div>
+
+      <!-- Success Screen -->
+      <div id="successScreen" class="success-screen hidden" role="region" aria-label="Đăng ký thành công">
+        <div class="success-icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h2 class="success-title">Đăng ký thành công!</h2>
+        <div class="success-id-badge" id="successIdBadge">--</div>
+        <p class="success-desc">
+          Use case của bạn đã được ghi nhận.<br>
+          Team sẽ review và liên hệ qua email sớm nhất.
+        </p>
+        <div class="success-actions">
+          <button onclick="location.reload()" class="btn btn-primary">Đăng ký thêm</button>
+          <a href="index.html" class="btn btn-outline">← Trang chủ</a>
+        </div>
+      </div>
+
+      <!-- Wizard Navigation Footer -->
+      <div class="wizard-nav-wrapper" id="wizardNavWrapper">
+        <div class="wizard-nav-left">
+          <button type="button" id="prevBtn" class="btn btn-outline" disabled aria-label="Bước trước">
+            ← Trước
+          </button>
+        </div>
+        <div class="wizard-nav-right">
+          <button type="button" id="nextBtn" class="btn btn-primary" aria-label="Bước tiếp theo">
+            Tiếp →
+          </button>
+          <button type="button" id="submitBtn" class="btn btn-success" style="display:none;" aria-label="Gửi đăng ký">
+            Gửi đăng ký ✓
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /wizard -->
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden" role="status" aria-label="Đang tải">
+      <div class="spinner" aria-hidden="true"></div>
+      <span class="loading-label" id="loadingLabel">Đang tải...</span>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  </main>
+
+  <!-- JS dependencies (ORDER MATTERS) -->
+  <script src="config/env.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <!-- Auth guard: redirect to login if not authenticated (runs sync before DOMContentLoaded) -->
+  <script>(function(){ AuthService.requireAuth(); })();</script>
+  <script src="config/routes.js"></script>
+  <script src="assets/js/constants.js"></script>
+  <script src="assets/js/helpers.js"></script>
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/validation.js"></script>
+  <script src="assets/js/toast.js"></script>
+  <script src="assets/js/duplicate-check.js"></script>
+  <script src="assets/js/form-mapper.js"></script>
+  <script src="assets/js/wizard.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

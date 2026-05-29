@@ -13,12 +13,12 @@
 
   // ── Status display config ────────────────────────────────────────
   var STATUS_CFG = {
-    'Draft':        { label: 'Nháp',         color: '#5f6368' },
-    'Submitted':    { label: 'Đã nộp',       color: '#1a73e8' },
-    'Under Review': { label: 'Đang review',  color: '#f29900' },
-    'Approved':     { label: 'Đã duyệt',     color: '#0f9d58' },
-    'Rejected':     { label: 'Từ chối',      color: '#d93025' },
-    'Archived':     { label: 'Lưu trữ',      color: '#80868b' }
+    'Draft':        { label: 'Nháp',         color: '#A4A4B2' },
+    'Submitted':    { label: 'Đã nộp',       color: '#7B2CBF' },
+    'Under Review': { label: 'Đang review',  color: '#F6B100' },
+    'Approved':     { label: 'Đã duyệt',     color: '#4CAF50' },
+    'Rejected':     { label: 'Từ chối',      color: '#F44336' },
+    'Archived':     { label: 'Lưu trữ',      color: '#A4A4B2' }
   };
 
   // ── Admin Gate ───────────────────────────────────────────────────
@@ -40,18 +40,36 @@
     });
   }
 
+  function populateSidebarUser(email, displayName) {
+    var initials = (displayName || email || '?').charAt(0).toUpperCase();
+
+    var sidebarAvatar   = document.getElementById('sidebarAvatar');
+    var sidebarUserName = document.getElementById('sidebarUserName');
+    var topbarAvatar    = document.getElementById('topbarAvatar');
+    var topbarUserName  = document.getElementById('topbarUserName');
+    var topbarChip      = document.getElementById('topbarUserChip');
+
+    if (sidebarAvatar)   sidebarAvatar.textContent   = initials;
+    if (sidebarUserName) sidebarUserName.textContent = displayName || email || '';
+    if (topbarAvatar)    topbarAvatar.textContent    = initials;
+    if (topbarUserName)  topbarUserName.textContent  = displayName || email || '';
+    if (topbarChip)      topbarChip.style.display    = '';
+  }
+
   function showGate() {
     document.getElementById('adminGate').classList.remove('hidden');
     document.getElementById('dashboardContent').classList.add('hidden');
-    document.getElementById('headerAdminActions').classList.add('hidden');
   }
 
   function showDashboard() {
     document.getElementById('adminGate').classList.add('hidden');
     document.getElementById('dashboardContent').classList.remove('hidden');
-    document.getElementById('headerAdminActions').classList.remove('hidden');
-    var emailEl = document.getElementById('adminEmailDisplay');
-    if (emailEl) emailEl.textContent = _adminEmail;
+
+    var user = (typeof AuthService !== 'undefined' && AuthService.getUser)
+      ? AuthService.getUser() : null;
+    var displayName = user ? (user.displayName || user.email) : _adminEmail;
+    populateSidebarUser(_adminEmail, displayName);
+
     loadDashboardData();
   }
 
@@ -92,23 +110,25 @@
       showDashboard();
     });
 
-    var logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', function () {
-        if (typeof AuthService !== 'undefined') {
-          AuthService.logout();
-          window.location.replace('login.html');
-        } else {
-          // Legacy fallback
-          sessionStorage.removeItem(APP_CONFIG.ADMIN_SESSION_KEY);
-          _adminEmail  = null;
-          _dashData    = null;
-          _pendingList = [];
-          _allList     = [];
-          showGate();
-        }
-      });
+    function doLogout() {
+      if (typeof AuthService !== 'undefined') {
+        AuthService.logout();
+        window.location.replace('login.html');
+      } else {
+        sessionStorage.removeItem(APP_CONFIG.ADMIN_SESSION_KEY);
+        _adminEmail  = null;
+        _dashData    = null;
+        _pendingList = [];
+        _allList     = [];
+        showGate();
+      }
     }
+
+    var logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
+
+    var sidebarLogout = document.getElementById('sidebarLogoutBtn');
+    if (sidebarLogout) sidebarLogout.addEventListener('click', doLogout);
   }
 
   // ── Data Loading ─────────────────────────────────────────────────
@@ -177,7 +197,7 @@
     var total = objSum(breakdown);
     if (total === 0) { container.innerHTML = emptyChart(); return; }
 
-    var order = ['Approved', 'Submitted', 'Under Review', 'Draft', 'Rejected', 'Archived'];
+    var order = ['Approved', 'Under Review', 'Submitted', 'Draft', 'Rejected', 'Archived'];
     container.innerHTML = order.map(function (status) {
       var count = breakdown[status] || 0;
       if (count === 0) return '';

@@ -1,18 +1,26 @@
 /* ─────────────────────────────────────────
-   dashboard.js — Dashboard quản lý AI Use Case
-   Phụ thuộc: config/env.js, config/routes.js, assets/js/api.js
-   RBAC: UI-level only. Backend GAS có validation riêng.
+   dashboard.js — Dashboard + My Cases
+   Accessible to all logged-in users.
+   Admin: all tabs + KPI + approve/reject.
+   User:  "My Cases" tab only.
+   Depends: env.js, auth.js, routes.js, api.js
    ───────────────────────────────────────── */
 (function () {
+  'use strict';
 
   // ── State ────────────────────────────────────────────────────────
-  var _adminEmail  = null;
+  var _user        = null;
+  var _isAdmin     = false;
   var _dashData    = null;
   var _pendingList = [];
   var _allList     = [];
+  var _myList      = [];
   var _charts      = {};
+  var _detailUc    = null;
+  var _detailAction = null; // 'approve' | 'reject'
+  var _ucCache     = {}; // key → uc object (safe alternative to inline JSON)
 
-  // ── Status display config ────────────────────────────────────────
+  // ── Status config ────────────────────────────────────────────────
   var STATUS_CFG = {
     'Draft':        { label: 'Nháp',         color: '#A4A4B2' },
     'Submitted':    { label: 'Đã nộp',       color: '#7B2CBF' },
@@ -22,137 +30,144 @@
     'Archived':     { label: 'Lưu trữ',      color: '#A4A4B2' }
   };
 
-  // ── Admin Gate ───────────────────────────────────────────────────
-  function checkAdminAccess() {
-    var saved = sessionStorage.getItem(APP_CONFIG.ADMIN_SESSION_KEY);
-    if (saved && isAdminEmail(saved)) {
-      _adminEmail = saved;
-      showDashboard();
+  // ── Init ─────────────────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', function () {
+
+    // Auth check: all logged-in users allowed
+    if (typeof AuthService !== 'undefined') {
+      if (!AuthService.isLoggedIn()) {
+        window.location.replace('login.html?return=dashboard.html');
+        return;
+      }
+      _user    = AuthService.getUser();
+      _isAdmin = AuthService.isAdmin();
+    }
+
+    _populateSidebar();
+    _setupLayout();
+    _bindTabs();
+    _bindSearch();
+    _bindRefresh();
+    _bindDetailModal();
+    _bindApprovalModal();
+
+    // Determine initial tab from URL param
+    var sp       = new URLSearchParams(window.location.search);
+    var initTab  = sp.get('tab') || (_isAdmin ? 'overview' : 'my');
+    _activateTab(initTab);
+
+    // Load data for initial tab
+    _loadTabData(initTab);
+  });
+
+  // ── Layout setup (role-based visibility) ─────────────────────────
+  function _setupLayout() {
+    if (_isAdmin) {
+      // Show KPI row
+      var kpiRow = document.getElementById('kpiRow');
+      if (kpiRow) kpiRow.style.display = '';
+
+      // Show admin tabs
+      document.querySelectorAll('.admin-only').forEach(function (el) {
+        el.style.display = '';
+      });
+
+      // Show Dashboard nav item
+      var navDash = document.getElementById('navDashboard');
+      if (navDash) navDash.style.display = '';
+
+      // Show refresh button
+      var refreshBtn = document.getElementById('refreshBtn');
+      if (refreshBtn) refreshBtn.style.display = '';
+
+      // Update topbar title
+      var title = document.getElementById('topbarTitle');
+      if (title) title.textContent = 'Dashboard Quản lý';
     } else {
-      showGate();
+      // Regular user: topbar shows "Use Case của tôi"
+      var title2 = document.getElementById('topbarTitle');
+      if (title2) title2.textContent = 'Use Case của tôi';
     }
   }
 
-  function isAdminEmail(email) {
-    if (!email) return false;
-    var lower = email.toLowerCase().trim();
-    return (APP_CONFIG.ADMIN_EMAILS || []).some(function (a) {
-      return a.toLowerCase().trim() === lower;
+  // ── Populate sidebar user info ────────────────────────────────────
+  function _populateSidebar() {
+    if (!_user) return;
+    var initials = (_user.displayName || _user.email || '?').charAt(0).toUpperCase();
+    function setEl(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+    setEl('sidebarAvatar',   initials);
+    setEl('sidebarUserName', _user.displayName || _user.email);
+    setEl('sidebarUserRole', _isAdmin ? 'Admin' : 'Người dùng');
+    setEl('topbarAvatar',    initials);
+    setEl('topbarUserName',  _user.displayName || _user.email);
+    var chip = document.getElementById('topbarUserChip'); if (chip) chip.style.display = '';
+
+    // Logout
+    var logoutBtn = document.getElementById('sidebarLogoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', function () {
+      if (typeof AuthService !== 'undefined') AuthService.logout();
+      window.location.replace('login.html');
     });
   }
 
-  function populateSidebarUser(email, displayName) {
-    var initials = (displayName || email || '?').charAt(0).toUpperCase();
-
-    var sidebarAvatar   = document.getElementById('sidebarAvatar');
-    var sidebarUserName = document.getElementById('sidebarUserName');
-    var topbarAvatar    = document.getElementById('topbarAvatar');
-    var topbarUserName  = document.getElementById('topbarUserName');
-    var topbarChip      = document.getElementById('topbarUserChip');
-
-    if (sidebarAvatar)   sidebarAvatar.textContent   = initials;
-    if (sidebarUserName) sidebarUserName.textContent = displayName || email || '';
-    if (topbarAvatar)    topbarAvatar.textContent    = initials;
-    if (topbarUserName)  topbarUserName.textContent  = displayName || email || '';
-    if (topbarChip)      topbarChip.style.display    = '';
-  }
-
-  function showGate() {
-    document.getElementById('adminGate').classList.remove('hidden');
-    document.getElementById('dashboardContent').classList.add('hidden');
-  }
-
-  function showDashboard() {
-    document.getElementById('adminGate').classList.add('hidden');
-    document.getElementById('dashboardContent').classList.remove('hidden');
-
-    var user = (typeof AuthService !== 'undefined' && AuthService.getUser)
-      ? AuthService.getUser() : null;
-    var displayName = user ? (user.displayName || user.email) : _adminEmail;
-    populateSidebarUser(_adminEmail, displayName);
-
-    loadDashboardData();
-  }
-
-  function bindGate() {
-    var form       = document.getElementById('adminGateForm');
-    var emailInput = document.getElementById('adminEmailInput');
-    var errEl      = document.getElementById('adminGateError');
-
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var email = (emailInput.value || '').trim();
-
-      // Use AuthService if available
-      if (typeof AuthService !== 'undefined') {
-        var result = AuthService.login(email);
-        if (!result.success || !AuthService.isAdmin()) {
-          errEl.textContent = result.success
-            ? 'Email này không có quyền truy cập dashboard quản lý.'
-            : result.error;
-          errEl.classList.remove('hidden');
-          return;
-        }
-        _adminEmail = email;
-        errEl.classList.add('hidden');
-        showDashboard();
-        return;
-      }
-
-      // Legacy fallback
-      if (!isAdminEmail(email)) {
-        errEl.textContent = 'Email này không có quyền truy cập dashboard quản lý.';
-        errEl.classList.remove('hidden');
-        return;
-      }
-      _adminEmail = email;
-      sessionStorage.setItem(APP_CONFIG.ADMIN_SESSION_KEY, email);
-      errEl.classList.add('hidden');
-      showDashboard();
+  // ── Tab Navigation ───────────────────────────────────────────────
+  function _activateTab(tabName) {
+    document.querySelectorAll('.dash-tab').forEach(function (btn) {
+      var active = btn.dataset.tab === tabName;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', String(active));
+    });
+    document.querySelectorAll('.tab-panel').forEach(function (panel) {
+      panel.classList.toggle('hidden', panel.id !== 'tab-' + tabName);
     });
 
-    function doLogout() {
-      if (typeof AuthService !== 'undefined') {
-        AuthService.logout();
-        window.location.replace('login.html');
-      } else {
-        sessionStorage.removeItem(APP_CONFIG.ADMIN_SESSION_KEY);
-        _adminEmail  = null;
-        _dashData    = null;
-        _pendingList = [];
-        _allList     = [];
-        showGate();
-      }
+    // Update "Use Case của tôi" nav active state
+    var navMyUs = document.getElementById('navMyUs');
+    if (navMyUs) navMyUs.classList.toggle('is-active', tabName === 'my');
+    var navDash = document.getElementById('navDashboard');
+    if (navDash) navDash.classList.toggle('is-active', tabName !== 'my');
+  }
+
+  function _bindTabs() {
+    document.querySelectorAll('.dash-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var target = tab.dataset.tab;
+        _activateTab(target);
+        _loadTabData(target);
+      });
+    });
+  }
+
+  function _loadTabData(tab) {
+    if (tab === 'overview' && _isAdmin) {
+      _loadAdminOverview();
+    } else if (tab === 'pending' && _isAdmin) {
+      if (_pendingList.length === 0) _loadPending();
+    } else if (tab === 'all' && _isAdmin) {
+      if (_allList.length === 0) _loadAllUseCases();
+    } else if (tab === 'my') {
+      _loadMyUseCases();
     }
-
-    var logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
-
-    var sidebarLogout = document.getElementById('sidebarLogoutBtn');
-    if (sidebarLogout) sidebarLogout.addEventListener('click', doLogout);
   }
 
-  // ── Data Loading ─────────────────────────────────────────────────
-  async function loadDashboardData() {
+  // ── Admin: load overview ──────────────────────────────────────────
+  async function _loadAdminOverview() {
     showLoading(true);
     try {
-      // Load overview + pending concurrently
-      const [dashData, pendingList] = await Promise.all([
+      var results = await Promise.all([
         Api.getDashboard(),
         Api.listUseCases({ filter: 'pending' })
       ]);
-      _dashData    = dashData;
-      _pendingList = pendingList || [];
+      _dashData    = results[0];
+      _pendingList = results[1] || [];
 
       renderKPI(_dashData);
       renderStatusChart(_dashData.status_breakdown   || {});
       renderBreakdownChart('teamChart',     _dashData.team_breakdown     || {});
       renderBreakdownChart('categoryChart', _dashData.category_breakdown || {});
       renderRecentTable(_dashData.recent_submissions || []);
-      renderPendingTable(_pendingList);
       updatePendingBadge(_pendingList.length);
       updateRefreshedAt(_dashData.refreshed_at);
-
     } catch (err) {
       showToast('Lỗi tải dữ liệu: ' + err.message, 'error');
     } finally {
@@ -160,7 +175,22 @@
     }
   }
 
-  async function loadAllUseCases() {
+  // ── Admin: load pending ───────────────────────────────────────────
+  async function _loadPending() {
+    showLoading(true);
+    try {
+      _pendingList = (await Api.listUseCases({ filter: 'pending' })) || [];
+      renderPendingList(_pendingList);
+      updatePendingBadge(_pendingList.length);
+    } catch (err) {
+      showToast('Lỗi tải danh sách chờ duyệt: ' + err.message, 'error');
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  // ── Admin: load all ───────────────────────────────────────────────
+  async function _loadAllUseCases() {
     showLoading(true);
     try {
       _allList = (await Api.listUseCases({ limit: 200 })) || [];
@@ -172,12 +202,30 @@
     }
   }
 
+  // ── My Cases ──────────────────────────────────────────────────────
+  async function _loadMyUseCases() {
+    showLoading(true);
+    try {
+      var all = (await Api.listUseCases({ limit: 200 })) || [];
+      var userName  = _user ? (_user.displayName || '').toLowerCase() : '';
+      var userEmail = _user ? (_user.email || '').toLowerCase() : '';
+      _myList = all.filter(function (uc) {
+        return (uc.owner_name  || '').toLowerCase() === userName
+            || (uc.owner_email || '').toLowerCase() === userEmail;
+      });
+      renderMyTable(_myList);
+    } catch (err) {
+      showToast('Lỗi tải use case của bạn: ' + err.message, 'error');
+    } finally {
+      showLoading(false);
+    }
+  }
+
   // ── KPI ──────────────────────────────────────────────────────────
   function renderKPI(data) {
     var st      = data.status_breakdown || {};
     var pending = (st['Submitted'] || 0) + (st['Under Review'] || 0);
     var hours   = data.total_hours_saved_month || 0;
-
     setKPI('kpiTotal',    data.total_use_cases || 0);
     setKPI('kpiApproved', data.approved_count  || 0);
     setKPI('kpiPending',  pending);
@@ -191,17 +239,14 @@
     if (el) el.textContent = value;
   }
 
-  // ── Status Chart (doughnut via Chart.js) ─────────────────────────
+  // ── Status Chart ─────────────────────────────────────────────────
   function renderStatusChart(breakdown) {
     var container = document.getElementById('statusChart');
     if (!container) return;
     var total = objSum(breakdown);
     if (total === 0) { container.innerHTML = emptyChart(); return; }
 
-    if (typeof Chart === 'undefined') {
-      _renderStatusChartCSS(container, breakdown, total);
-      return;
-    }
+    if (typeof Chart === 'undefined') { _renderStatusChartCSS(container, breakdown, total); return; }
 
     var order = ['Approved', 'Under Review', 'Submitted', 'Draft', 'Rejected', 'Archived'];
     var labels = [], data = [], colors = [];
@@ -209,45 +254,21 @@
       var count = breakdown[status] || 0;
       if (!count) return;
       var cfg = STATUS_CFG[status] || { label: status, color: '#dadce0' };
-      labels.push(cfg.label);
-      data.push(count);
-      colors.push(cfg.color);
+      labels.push(cfg.label); data.push(count); colors.push(cfg.color);
     });
 
     var canvas = container.querySelector('canvas');
     if (!canvas) { container.innerHTML = '<canvas></canvas>'; canvas = container.querySelector('canvas'); }
-
-    if (_charts.status) { _charts.status.destroy(); }
+    if (_charts.status) _charts.status.destroy();
 
     _charts.status = new Chart(canvas.getContext('2d'), {
       type: 'doughnut',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: data,
-          backgroundColor: colors,
-          borderWidth: 2,
-          borderColor: '#fff',
-          hoverOffset: 6
-        }]
-      },
+      data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
       options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        aspectRatio: 1.6,
+        responsive: true, maintainAspectRatio: true, aspectRatio: 1.6,
         plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { padding: 14, font: { size: 12 }, usePointStyle: true, pointStyleWidth: 10 }
-          },
-          tooltip: {
-            callbacks: {
-              label: function (ctx) {
-                var pct = ((ctx.parsed / total) * 100).toFixed(1);
-                return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
-              }
-            }
-          }
+          legend: { position: 'bottom', labels: { padding: 14, font: { size: 12 }, usePointStyle: true, pointStyleWidth: 10 } },
+          tooltip: { callbacks: { label: function (ctx) { var pct = ((ctx.parsed / total) * 100).toFixed(1); return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)'; } } }
         }
       }
     });
@@ -264,7 +285,7 @@
     }).join('');
   }
 
-  // ── Generic Breakdown Chart (horizontal bar via Chart.js) ─────────
+  // ── Breakdown Chart ───────────────────────────────────────────────
   function renderBreakdownChart(containerId, breakdown) {
     var container = document.getElementById(containerId);
     if (!container) return;
@@ -274,10 +295,7 @@
 
     if (entries.length === 0) { container.innerHTML = emptyChart(); return; }
 
-    if (typeof Chart === 'undefined') {
-      _renderBreakdownChartCSS(container, entries);
-      return;
-    }
+    if (typeof Chart === 'undefined') { _renderBreakdownChartCSS(container, entries); return; }
 
     var top    = entries.slice(0, 8);
     var labels = top.map(function (e) { return e[0]; });
@@ -286,46 +304,15 @@
 
     var canvas = container.querySelector('canvas');
     if (!canvas) { container.innerHTML = '<canvas></canvas>'; canvas = container.querySelector('canvas'); }
-
-    if (_charts[containerId]) { _charts[containerId].destroy(); }
+    if (_charts[containerId]) _charts[containerId].destroy();
 
     _charts[containerId] = new Chart(canvas.getContext('2d'), {
       type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: data,
-          backgroundColor: 'rgba(123,44,191,0.72)',
-          borderColor: '#7B2CBF',
-          borderWidth: 0,
-          borderRadius: 4,
-          borderSkipped: false
-        }]
-      },
+      data: { labels: labels, datasets: [{ data: data, backgroundColor: 'rgba(123,44,191,0.72)', borderWidth: 0, borderRadius: 4 }] },
       options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: true,
-        aspectRatio: ratio,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function (ctx) { return ' ' + ctx.parsed.x + ' use case'; }
-            }
-          }
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: { precision: 0, font: { size: 11 } },
-            grid: { color: 'rgba(0,0,0,0.04)' }
-          },
-          y: {
-            ticks: { font: { size: 12 } },
-            grid: { display: false }
-          }
-        }
+        indexAxis: 'y', responsive: true, maintainAspectRatio: true, aspectRatio: ratio,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ' ' + ctx.parsed.x + ' use case'; } } } },
+        scales: { x: { beginAtZero: true, ticks: { precision: 0, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.04)' } }, y: { ticks: { font: { size: 12 } }, grid: { display: false } } }
       }
     });
   }
@@ -333,35 +320,42 @@
   function _renderBreakdownChartCSS(container, entries) {
     var maxVal = entries[0][1] || 1;
     container.innerHTML = entries.slice(0, 8).map(function (e) {
-      var pct = ((e[1] / maxVal) * 100).toFixed(0);
-      return _chartRow(e[0], pct + '%', 'var(--color-primary)', String(e[1]), 'var(--color-primary-light)', true);
+      return _chartRow(e[0], ((e[1] / maxVal) * 100).toFixed(0) + '%', 'var(--color-primary)', String(e[1]), 'var(--color-primary-light)', true);
     }).join('');
   }
 
   function _chartRow(label, widthPct, barColor, countText, bgColor, bordered) {
     var barStyle = 'width:' + widthPct + ';background:' + (bgColor || barColor);
     if (bordered) barStyle += ';border-left:3px solid ' + barColor;
-    return '<div class="chart-row">' +
-      '<span class="chart-row-label" title="' + esc(label) + '">' + esc(label) + '</span>' +
-      '<div class="chart-bar-wrap"><div class="chart-bar" style="' + barStyle + '"></div></div>' +
-      '<span class="chart-row-count">' + esc(countText) + '</span>' +
-    '</div>';
+    return '<div class="chart-row"><span class="chart-row-label" title="' + esc(label) + '">' + esc(label) + '</span><div class="chart-bar-wrap"><div class="chart-bar" style="' + barStyle + '"></div></div><span class="chart-row-count">' + esc(countText) + '</span></div>';
   }
 
-  function emptyChart() {
-    return '<p class="empty-state-text">Chưa có dữ liệu</p>';
+  function emptyChart() { return '<p class="empty-state-text">Chưa có dữ liệu</p>'; }
+
+  // ── UC Cache (safe onclick without inline JSON) ───────────────────
+  function _cache(uc) {
+    var key = uc.record_id || uc.usecase_id || ('uc_' + Object.keys(_ucCache).length);
+    _ucCache[key] = uc;
+    return key;
+  }
+  function _btnDetail(uc, label, cls) {
+    return '<button class="btn btn-sm ' + (cls||'btn-outline') + '" onclick="event.stopPropagation();Dashboard._byKey(\'' + esc(_cache(uc)) + '\')">' + label + '</button>';
+  }
+  function _btnApprove(uc) {
+    return '<button class="btn btn-sm btn-success" onclick="event.stopPropagation();Dashboard._approveByKey(\'' + esc(_cache(uc)) + '\')">✓ Duyệt</button>';
+  }
+  function _btnReject(uc) {
+    return '<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();Dashboard._rejectByKey(\'' + esc(_cache(uc)) + '\')">✕ Từ chối</button>';
   }
 
-  // ── Recent Submissions Table ─────────────────────────────────────
+  // ── Recent Submissions Table ──────────────────────────────────────
   function renderRecentTable(items) {
     var tbody = document.querySelector('#recentTable tbody');
     if (!tbody) return;
-    if (!items.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="empty-cell">Chưa có use case nào được nộp gần đây</td></tr>';
-      return;
-    }
+    if (!items.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-cell">Chưa có use case nào được nộp gần đây</td></tr>'; return; }
     tbody.innerHTML = items.map(function (uc) {
-      return '<tr>' +
+      var k = _cache(uc);
+      return '<tr style="cursor:pointer" onclick="Dashboard._byKey(\'' + esc(k) + '\')">' +
         '<td><span class="id-badge">' + esc(uc.usecase_id || '--') + '</span></td>' +
         '<td>' + esc(uc.name || '') + '</td>' +
         '<td>' + esc(uc.team || '--') + '</td>' +
@@ -370,36 +364,33 @@
     }).join('');
   }
 
-  // ── Pending Approval Cards ────────────────────────────────────────
-  function renderPendingTable(items) {
+  // ── Pending List ──────────────────────────────────────────────────
+  function renderPendingList(items) {
     var container = document.getElementById('pendingList');
     if (!container) return;
-    if (!items.length) {
-      container.innerHTML = '<div class="empty-state"><p class="empty-state-text">Không có use case nào đang chờ duyệt ✓</p></div>';
-      return;
-    }
+    if (!items.length) { container.innerHTML = '<div class="empty-state"><p class="empty-state-text">Không có use case nào đang chờ duyệt ✓</p></div>'; return; }
     container.innerHTML = items.map(function (uc) {
       var cfg = STATUS_CFG[uc.status] || { label: uc.status, color: '#5f6368' };
       var excerpt = uc.pain_point
-        ? '<div class="pending-card-excerpt">' + esc(uc.pain_point.substring(0, 150)) +
-          (uc.pain_point.length > 150 ? '…' : '') + '</div>'
+        ? '<div class="pending-card-excerpt">' + esc(uc.pain_point.substring(0, 150)) + (uc.pain_point.length > 150 ? '…' : '') + '</div>'
         : '';
-      return '<div class="pending-card" data-record-id="' + esc(uc.record_id) + '">' +
+      return '<div class="pending-card">' +
         '<div class="pending-card-header">' +
           '<span class="id-badge">' + esc(uc.usecase_id || '--') + '</span>' +
           '<span class="status-badge" style="background:' + cfg.color + '20;color:' + cfg.color + ';border:1px solid ' + cfg.color + '40">' + cfg.label + '</span>' +
         '</div>' +
         '<div class="pending-card-title">' + esc(uc.name || 'Không có tên') + '</div>' +
         '<div class="pending-card-meta">' +
-          '<span>👤 ' + esc(uc.owner_name || '--') + '</span>' +
-          '<span>🏷️ ' + esc(uc.team || '--') + '</span>' +
-          '<span>📁 ' + esc(uc.category || '--') + '</span>' +
-          '<span>📅 ' + fmtDate(uc.submit_date) + '</span>' +
+          '<span>' + esc(uc.owner_name || '--') + '</span>' +
+          '<span>' + esc(uc.team || '--') + '</span>' +
+          '<span>' + esc(uc.category || '--') + '</span>' +
+          '<span>' + fmtDate(uc.submit_date) + '</span>' +
         '</div>' +
         excerpt +
         '<div class="pending-card-actions">' +
-          '<button class="btn btn-sm btn-success" onclick="Dashboard._approve(\'' + esc(uc.record_id) + '\',\'' + escAttr(uc.name || '') + '\')">✓ Duyệt</button>' +
-          '<button class="btn btn-sm btn-danger"  onclick="Dashboard._reject(\''  + esc(uc.record_id) + '\',\'' + escAttr(uc.name || '') + '\')">✕ Từ chối</button>' +
+          _btnDetail(uc, 'Xem chi tiết') +
+          _btnApprove(uc) +
+          _btnReject(uc) +
         '</div>' +
       '</div>';
     }).join('');
@@ -409,129 +400,258 @@
   function renderAllTable(items) {
     var tbody = document.querySelector('#allTable tbody');
     if (!tbody) return;
-    if (!items.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty-cell">Chưa có use case nào</td></tr>';
-      return;
-    }
+    if (!items.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-cell">Chưa có use case nào</td></tr>'; return; }
     tbody.innerHTML = items.map(function (uc) {
       var cfg = STATUS_CFG[uc.status] || { label: uc.status, color: '#5f6368' };
-      return '<tr>' +
+      var k = _cache(uc);
+      return '<tr style="cursor:pointer" onclick="Dashboard._byKey(\'' + esc(k) + '\')">' +
         '<td><span class="id-badge">' + esc(uc.usecase_id || '--') + '</span></td>' +
         '<td>' + esc(uc.name || '') + '</td>' +
         '<td>' + esc(uc.owner_name || '--') + '</td>' +
         '<td>' + esc(uc.team || '--') + '</td>' +
         '<td><span class="status-badge" style="background:' + cfg.color + '20;color:' + cfg.color + '">' + cfg.label + '</span></td>' +
+        '<td>' + _btnDetail(uc, 'Chi tiết') + '</td>' +
       '</tr>';
     }).join('');
   }
 
-  // ── Modal: Approve / Reject ───────────────────────────────────────
-  var _modal = { action: null, recordId: null };
-
-  function openApprove(recordId, name) {
-    _modal = { action: 'approve', recordId: recordId };
-    var confirmBtn = document.getElementById('modalConfirmBtn');
-    confirmBtn.className = 'btn btn-success';
-    confirmBtn.textContent = 'Xác nhận duyệt';
-    document.getElementById('modalTitle').textContent = 'Xác nhận duyệt use case';
-    document.getElementById('modalBody').innerHTML =
-      'Duyệt use case: <strong>' + esc(name) + '</strong>';
-    document.getElementById('modalComment').value = '';
-    document.getElementById('rejectNote').classList.add('hidden');
-    document.getElementById('approvalModal').classList.remove('hidden');
+  // ── My Cases Table ────────────────────────────────────────────────
+  function renderMyTable(items) {
+    var tbody = document.querySelector('#myTable tbody');
+    if (!tbody) return;
+    if (!items.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-cell">Bạn chưa có use case nào. <a href="register.html">Đăng ký ngay →</a></td></tr>';
+      return;
+    }
+    tbody.innerHTML = items.map(function (uc) {
+      var cfg = STATUS_CFG[uc.status] || { label: uc.status, color: '#5f6368' };
+      var k = _cache(uc);
+      return '<tr style="cursor:pointer" onclick="Dashboard._byKey(\'' + esc(k) + '\')">' +
+        '<td><span class="id-badge">' + esc(uc.usecase_id || '--') + '</span></td>' +
+        '<td>' + esc(uc.name || '') + '</td>' +
+        '<td><span class="status-badge" style="background:' + cfg.color + '20;color:' + cfg.color + '">' + cfg.label + '</span></td>' +
+        '<td>' + fmtDate(uc.submit_date || uc.submitted_at) + '</td>' +
+        '<td>' + _btnDetail(uc, 'Chi tiết') + '</td>' +
+      '</tr>';
+    }).join('');
   }
 
-  function openReject(recordId, name) {
-    _modal = { action: 'reject', recordId: recordId };
-    var confirmBtn = document.getElementById('modalConfirmBtn');
-    confirmBtn.className = 'btn btn-danger';
-    confirmBtn.textContent = 'Xác nhận từ chối';
-    document.getElementById('modalTitle').textContent = 'Từ chối use case';
-    document.getElementById('modalBody').innerHTML =
-      'Từ chối use case: <strong>' + esc(name) + '</strong>';
-    document.getElementById('modalComment').value = '';
-    document.getElementById('rejectNote').classList.remove('hidden');
-    document.getElementById('approvalModal').classList.remove('hidden');
+  // ── US Detail Modal ───────────────────────────────────────────────
+  function openDetail(uc) {
+    _detailUc     = uc;
+    _detailAction = null;
+
+    // Header
+    document.getElementById('detailModalTitle').textContent = uc.name || 'Chi tiết Use Case';
+    document.getElementById('detailModalId').textContent    = uc.usecase_id || '--';
+
+    var cfg = STATUS_CFG[uc.status] || { label: uc.status || '--', color: '#5f6368' };
+    var statusEl = document.getElementById('detailModalStatus');
+    statusEl.textContent = cfg.label;
+    statusEl.style.cssText = 'background:' + cfg.color + '20;color:' + cfg.color + ';border:1px solid ' + cfg.color + '40;flex-shrink:0';
+
+    // Body: render detail fields
+    document.getElementById('detailView').innerHTML = _renderDetailBody(uc);
+
+    // Edit button (own cases, not yet approved/rejected)
+    var editBtn = document.getElementById('detailEditBtn');
+    if (editBtn) {
+      var canEdit = uc.record_id && ['Draft','Submitted'].includes(uc.status);
+      editBtn.style.display = canEdit ? '' : 'none';
+      editBtn.href = 'register.html?edit=' + encodeURIComponent(uc.record_id || uc.usecase_id || '');
+    }
+
+    // Approve/Reject buttons: admin only, on eligible statuses
+    var canApprove = _isAdmin && ['Submitted', 'Under Review'].includes(uc.status);
+    document.getElementById('detailApproveBtn').style.display = canApprove ? '' : 'none';
+    document.getElementById('detailRejectBtn').style.display  = canApprove ? '' : 'none';
+
+    // Reset action area
+    document.getElementById('detailActionArea').style.display  = 'none';
+    document.getElementById('detailModalFooter').style.display = '';
+    document.getElementById('detailActionComment').value = '';
+
+    document.getElementById('usDetailModal').classList.remove('hidden');
   }
 
-  function closeModal() {
-    document.getElementById('approvalModal').classList.add('hidden');
-    _modal = { action: null, recordId: null };
+  function _renderDetailBody(uc) {
+    var fields = [
+      ['Mã Use Case',       uc.usecase_id],
+      ['Tên Use Case',      uc.name],
+      ['Người đăng ký',     uc.owner_name],
+      ['Mã người đăng ký',  uc.owner_email],
+      ['Team',              uc.team],
+      ['Lĩnh vực',          uc.category],
+      ['Trạng thái',        (STATUS_CFG[uc.status] || {}).label || uc.status],
+      ['Ngày nộp',          fmtDate(uc.submit_date || uc.submitted_at)],
+      ['Vấn đề / Pain point', uc.pain_point],
+      ['Giải pháp AI đề xuất', uc.solution],
+      ['Lợi ích kỳ vọng',  uc.expected_benefit],
+      ['Ước tính giờ tiết kiệm/tháng', uc.hours_saved],
+      ['Nhận xét duyệt',   uc.review_comment],
+      ['Người duyệt',      uc.reviewer_email],
+    ];
+
+    var html = '<dl style="display:grid;grid-template-columns:160px 1fr;gap:var(--space-2) var(--space-4);margin:0">';
+    fields.forEach(function (f) {
+      if (!f[1] && f[1] !== 0) return;
+      var val = String(f[1]);
+      html += '<dt style="font-size:var(--text-sm);color:var(--color-text-secondary);font-weight:var(--font-weight-medium);padding:var(--space-2) 0;border-bottom:1px solid var(--color-border)">' + esc(f[0]) + '</dt>';
+      html += '<dd style="font-size:var(--text-sm);color:var(--color-text);padding:var(--space-2) 0;border-bottom:1px solid var(--color-border);white-space:pre-wrap;word-break:break-word;margin:0">' + esc(val) + '</dd>';
+    });
+    html += '</dl>';
+    return html;
   }
 
-  async function confirmApproval() {
-    if (!_modal.action || !_modal.recordId) return;
-    var comment    = (document.getElementById('modalComment').value || '').trim();
-    var confirmBtn = document.getElementById('modalConfirmBtn');
+  function _bindDetailModal() {
+    document.getElementById('detailModalCloseBtn').addEventListener('click', _closeDetail);
+    document.getElementById('detailCloseBtn').addEventListener('click', _closeDetail);
 
-    if (_modal.action === 'reject' && !comment) {
+    document.getElementById('usDetailModal').addEventListener('click', function (e) {
+      if (e.target === this) _closeDetail();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') _closeDetail();
+    });
+
+    document.getElementById('detailApproveBtn').addEventListener('click', function () {
+      _showActionArea('approve');
+    });
+    document.getElementById('detailRejectBtn').addEventListener('click', function () {
+      _showActionArea('reject');
+    });
+    document.getElementById('detailActionCancelBtn').addEventListener('click', function () {
+      document.getElementById('detailActionArea').style.display  = 'none';
+      document.getElementById('detailModalFooter').style.display = '';
+    });
+    document.getElementById('detailActionConfirmBtn').addEventListener('click', _confirmDetailAction);
+  }
+
+  function _showActionArea(action) {
+    _detailAction = action;
+    var noteEl = document.getElementById('detailActionNote');
+    var confirmBtn = document.getElementById('detailActionConfirmBtn');
+    var comment = document.getElementById('detailActionComment');
+    comment.value = '';
+    comment.placeholder = action === 'approve' ? 'Nhận xét (tùy chọn)...' : 'Lý do từ chối (bắt buộc)...';
+    noteEl.style.display = action === 'reject' ? '' : 'none';
+    confirmBtn.className = action === 'approve' ? 'btn btn-success' : 'btn btn-danger';
+    confirmBtn.textContent = action === 'approve' ? '✓ Xác nhận duyệt' : '✕ Xác nhận từ chối';
+    document.getElementById('detailModalFooter').style.display = 'none';
+    document.getElementById('detailActionArea').style.display  = '';
+  }
+
+  async function _confirmDetailAction() {
+    if (!_detailUc || !_detailAction) return;
+    var comment = (document.getElementById('detailActionComment').value || '').trim();
+    if (_detailAction === 'reject' && !comment) {
       showToast('Vui lòng nhập lý do từ chối', 'error');
       return;
     }
-
-    confirmBtn.disabled    = true;
+    var confirmBtn = document.getElementById('detailActionConfirmBtn');
+    confirmBtn.disabled = true;
     confirmBtn.textContent = 'Đang xử lý...';
-
+    showLoading(true);
     try {
       var payload = {
-        record_id:      _modal.recordId,
-        reviewer_email: _adminEmail,
+        record_id:      _detailUc.record_id,
+        reviewer_email: _user ? _user.email : '',
         comment:        comment
       };
-
-      if (_modal.action === 'approve') {
+      if (_detailAction === 'approve') {
         await Api.approveUseCase(payload);
         showToast('Đã duyệt use case thành công', 'success');
       } else {
         await Api.rejectUseCase(payload);
         showToast('Đã từ chối use case', 'info');
       }
-
-      closeModal();
-
-      // Reload pending + cập nhật KPI
-      showLoading(true);
-      const [pending, dashData] = await Promise.all([
-        Api.listUseCases({ filter: 'pending' }),
-        Api.getDashboard()
-      ]);
-      _pendingList = pending || [];
-      _dashData    = dashData;
-      renderPendingTable(_pendingList);
-      updatePendingBadge(_pendingList.length);
-      renderKPI(_dashData);
-      renderStatusChart(_dashData.status_breakdown || {});
-      updateRefreshedAt(_dashData.refreshed_at);
-
+      _closeDetail();
+      // Reload pending + overview
+      _pendingList = [];
+      _dashData    = null;
+      await _loadAdminOverview();
+      if (document.getElementById('tab-pending') && !document.getElementById('tab-pending').classList.contains('hidden')) {
+        await _loadPending();
+      }
     } catch (err) {
       showToast('Lỗi: ' + err.message, 'error');
-      confirmBtn.disabled    = false;
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = _detailAction === 'approve' ? '✓ Xác nhận duyệt' : '✕ Xác nhận từ chối';
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  function _closeDetail() {
+    document.getElementById('usDetailModal').classList.add('hidden');
+    _detailUc     = null;
+    _detailAction = null;
+  }
+
+  // ── Legacy Approval Modal (kept for backward compat) ──────────────
+  function _bindApprovalModal() {
+    var cancelBtn  = document.getElementById('modalCancelBtn');
+    var confirmBtn = document.getElementById('modalConfirmBtn');
+    if (cancelBtn)  cancelBtn.addEventListener('click',  _closeModal);
+    if (confirmBtn) confirmBtn.addEventListener('click', _confirmModalApproval);
+    var modal = document.getElementById('approvalModal');
+    if (modal) modal.addEventListener('click', function (e) { if (e.target === this) _closeModal(); });
+  }
+
+  var _modal = { action: null, recordId: null };
+
+  function _openModalApprove(recordId, name) {
+    _modal = { action: 'approve', recordId: recordId };
+    document.getElementById('modalConfirmBtn').className     = 'btn btn-success';
+    document.getElementById('modalConfirmBtn').textContent   = 'Xác nhận duyệt';
+    document.getElementById('modalTitle').textContent        = 'Xác nhận duyệt use case';
+    document.getElementById('modalBody').innerHTML           = 'Duyệt use case: <strong>' + esc(name) + '</strong>';
+    document.getElementById('modalComment').value            = '';
+    document.getElementById('rejectNote').classList.add('hidden');
+    document.getElementById('approvalModal').classList.remove('hidden');
+  }
+
+  function _openModalReject(recordId, name) {
+    _modal = { action: 'reject', recordId: recordId };
+    document.getElementById('modalConfirmBtn').className     = 'btn btn-danger';
+    document.getElementById('modalConfirmBtn').textContent   = 'Xác nhận từ chối';
+    document.getElementById('modalTitle').textContent        = 'Từ chối use case';
+    document.getElementById('modalBody').innerHTML           = 'Từ chối use case: <strong>' + esc(name) + '</strong>';
+    document.getElementById('modalComment').value            = '';
+    document.getElementById('rejectNote').classList.remove('hidden');
+    document.getElementById('approvalModal').classList.remove('hidden');
+  }
+
+  function _closeModal() {
+    document.getElementById('approvalModal').classList.add('hidden');
+    _modal = { action: null, recordId: null };
+  }
+
+  async function _confirmModalApproval() {
+    if (!_modal.action || !_modal.recordId) return;
+    var comment    = (document.getElementById('modalComment').value || '').trim();
+    var confirmBtn = document.getElementById('modalConfirmBtn');
+    if (_modal.action === 'reject' && !comment) { showToast('Vui lòng nhập lý do từ chối', 'error'); return; }
+    confirmBtn.disabled = true; confirmBtn.textContent = 'Đang xử lý...';
+    showLoading(true);
+    try {
+      var payload = { record_id: _modal.recordId, reviewer_email: _user ? _user.email : '', comment: comment };
+      if (_modal.action === 'approve') { await Api.approveUseCase(payload); showToast('Đã duyệt use case thành công', 'success'); }
+      else                             { await Api.rejectUseCase(payload);  showToast('Đã từ chối use case', 'info'); }
+      _closeModal();
+      _pendingList = []; _dashData = null;
+      await _loadAdminOverview();
+    } catch (err) {
+      showToast('Lỗi: ' + err.message, 'error');
+      confirmBtn.disabled = false;
       confirmBtn.textContent = _modal.action === 'approve' ? 'Xác nhận duyệt' : 'Xác nhận từ chối';
     } finally {
       showLoading(false);
     }
   }
 
-  // ── Tab Navigation ───────────────────────────────────────────────
-  function bindTabs() {
-    document.querySelectorAll('.dash-tab').forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        var target = tab.dataset.tab;
-        document.querySelectorAll('.dash-tab').forEach(function (t) {
-          t.classList.toggle('active', t === tab);
-        });
-        document.querySelectorAll('.tab-panel').forEach(function (panel) {
-          panel.classList.toggle('hidden', panel.id !== 'tab-' + target);
-        });
-        if (target === 'all' && _allList.length === 0) {
-          loadAllUseCases();
-        }
-      });
-    });
-  }
-
-  // ── Search ───────────────────────────────────────────────────────
-  function bindSearch() {
+  // ── Search (All tab) ──────────────────────────────────────────────
+  function _bindSearch() {
     var input = document.getElementById('searchInput');
     if (!input) return;
     input.addEventListener('input', debounce(function () {
@@ -546,13 +666,13 @@
     }, 300));
   }
 
-  // ── Refresh Button ───────────────────────────────────────────────
-  function bindRefresh() {
+  // ── Refresh ───────────────────────────────────────────────────────
+  function _bindRefresh() {
     var btn = document.getElementById('refreshBtn');
     if (!btn) return;
     btn.addEventListener('click', function () {
-      _allList = []; // Force reload all list on next tab switch
-      loadDashboardData();
+      _allList = []; _pendingList = []; _dashData = null;
+      _loadAdminOverview();
     });
   }
 
@@ -575,15 +695,10 @@
     } catch (e) { return String(isoStr).substring(0, 10); }
   }
 
-  // XSS-safe: dùng textContent escaping cho nội dung bên trong thẻ
   function esc(str) {
     var d = document.createElement('span');
     d.textContent = String(str == null ? '' : str);
     return d.innerHTML;
-  }
-  // XSS-safe: cho giá trị attribute (loại bỏ dấu nháy đơn)
-  function escAttr(str) {
-    return String(str == null ? '' : str).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
   }
 
   function objSum(obj) {
@@ -609,51 +724,27 @@
     toast.setAttribute('role', 'alert');
     toast.innerHTML =
       '<span class="toast-icon" aria-hidden="true">' + (icons[type] || 'ℹ') + '</span>' +
-      '<span class="toast-message" style="white-space:pre-line">' + esc(message) + '</span>' +
+      '<span class="toast-message">' + esc(message) + '</span>' +
       '<button class="toast-close" aria-label="Đóng" onclick="this.parentElement.remove()">×</button>';
     container.appendChild(toast);
     setTimeout(function () { if (toast.parentNode) toast.remove(); }, 5000);
   }
 
-  // ── Init ─────────────────────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', function () {
-
-    // AuthService integration (auth.js must load before dashboard.js)
-    if (typeof AuthService !== 'undefined') {
-      // Redirect to login if not logged in, redirect to portal if not admin
-      if (!AuthService.isLoggedIn()) {
-        window.location.replace('login.html?return=dashboard.html');
-        return;
-      }
-      if (!AuthService.isAdmin()) {
-        window.location.replace('index.html');
-        return;
-      }
-      // Admin confirmed — bypass gate, go straight to dashboard
-      _adminEmail = AuthService.getUser().email;
-      showDashboard();
-    } else {
-      // Fallback: legacy email-gate flow (auth.js not loaded)
-      checkAdminAccess();
-    }
-
-    bindGate();   // Keep for legacy fallback path & logout binding
-    bindTabs();
-    bindSearch();
-    bindRefresh();
-
-    document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
-    document.getElementById('modalConfirmBtn').addEventListener('click', confirmApproval);
-
-    document.getElementById('approvalModal').addEventListener('click', function (e) {
-      if (e.target === this) closeModal();
-    });
-  });
-
-  // ── Public API (gọi từ inline onclick trên pending cards) ─────────
+  // ── Public API ────────────────────────────────────────────────────
   window.Dashboard = {
-    _approve: openApprove,
-    _reject:  openReject
+    _byKey: function (key) {
+      var uc = _ucCache[key]; if (uc) openDetail(uc);
+    },
+    _approveByKey: function (key) {
+      var uc = _ucCache[key]; if (uc) { openDetail(uc); _showActionArea('approve'); }
+    },
+    _rejectByKey: function (key) {
+      var uc = _ucCache[key]; if (uc) { openDetail(uc); _showActionArea('reject'); }
+    },
+    // Legacy compat
+    _openDetail:        openDetail,
+    _approve:           function (recordId, name) { _openModalApprove(recordId, name); },
+    _reject:            function (recordId, name) { _openModalReject(recordId, name); }
   };
 
 })();

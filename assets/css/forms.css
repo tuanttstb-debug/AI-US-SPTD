@@ -1,11 +1,18 @@
+/* ═══════════════════════════════════════════════════
+   forms.css — TPBank BIZ Form System
+   Purple-first focus states, 12px border radius
+   ═══════════════════════════════════════════════════ */
+
 /* ── Form Group ── */
 .form-group {
   margin-bottom: var(--space-5);
   position: relative;
 }
+.form-group:last-child { margin-bottom: 0; }
 
 /* ── Label ── */
-.form-group label.field-label {
+.form-group label.field-label,
+label.field-label {
   display: flex;
   align-items: center;
   gap: var(--space-1);
@@ -24,33 +31,32 @@
   line-height: 1;
 }
 
-/* ── Helper text ── */
+/* ── Helper & Error text ── */
 .field-helper {
   display: block;
   margin-top: var(--space-1);
   font-size: var(--text-xs);
-  color: var(--color-text-tertiary);
+  color: var(--color-text-muted);
   line-height: var(--leading-relaxed);
 }
-
-/* ── Inline error message ── */
 .field-error {
   display: block;
   margin-top: var(--space-1);
   font-size: var(--text-xs);
   color: var(--color-error);
   line-height: var(--leading-normal);
-  min-height: 0;
 }
 .field-error:empty { display: none; }
 
-/* ── Base input / select / textarea ── */
+/* ── Base Input / Select / Textarea ── */
 .form-group input:not([type="checkbox"]):not([type="radio"]),
 .form-group select,
-.form-group textarea {
+.form-group textarea,
+.form-control {
   width: 100%;
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-md); /* 16px — prevents iOS zoom */
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-family);
+  font-size: var(--text-md);
   color: var(--color-text);
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
@@ -58,26 +64,31 @@
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   appearance: none;
   -webkit-appearance: none;
+  outline: none;
+  line-height: var(--leading-normal);
+  box-sizing: border-box;
 }
 
 .form-group input:not([type="checkbox"]):not([type="radio"])::placeholder,
-.form-group textarea::placeholder {
-  color: var(--color-text-tertiary);
+.form-group textarea::placeholder,
+.form-control::placeholder {
+  color: var(--color-text-muted);
 }
 
 /* Hover */
 .form-group input:not([type="checkbox"]):not([type="radio"]):hover:not(:disabled),
 .form-group select:hover:not(:disabled),
 .form-group textarea:hover:not(:disabled) {
-  border-color: #bdc1c6;
+  border-color: #C4B8DC;
 }
 
-/* Focus */
+/* Focus — Purple */
 .form-group input:not([type="checkbox"]):not([type="radio"]):focus,
 .form-group select:focus,
-.form-group textarea:focus {
-  border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+.form-group textarea:focus,
+.form-control:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
   outline: none;
 }
 
@@ -85,23 +96,23 @@
 .form-group.has-error input:not([type="checkbox"]):not([type="radio"]),
 .form-group.has-error select,
 .form-group.has-error textarea {
-  border-color: var(--color-border-error);
-  background: #fffbfb;
+  border-color: var(--color-error);
+  background: #FFFAFA;
 }
 .form-group.has-error input:not([type="checkbox"]):not([type="radio"]):focus,
 .form-group.has-error select:focus,
 .form-group.has-error textarea:focus {
-  box-shadow: 0 0 0 3px rgba(217,48,37,0.12);
+  box-shadow: 0 0 0 3px var(--color-error-light);
 }
 
 /* ── Textarea ── */
 .form-group textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 88px;
   line-height: var(--leading-relaxed);
 }
 
-/* ── Select ── */
+/* ── Select with custom arrow ── */
 .form-group .select-wrapper {
   position: relative;
 }
@@ -109,38 +120,36 @@
   content: '';
   pointer-events: none;
   position: absolute;
-  right: var(--space-3);
+  right: var(--space-4);
   top: 50%;
   transform: translateY(-50%);
   width: 0;
   height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid var(--color-text-secondary);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--color-primary);
 }
 .form-group select {
-  padding-right: var(--space-8);
+  padding-right: var(--space-10);
   cursor: pointer;
-  background-image: none;
 }
 
 /* ── Number input with suffix ── */
 .input-with-suffix {
   display: flex;
   align-items: stretch;
-  gap: 0;
 }
 .input-with-suffix input {
   border-radius: var(--radius-md) 0 0 var(--radius-md) !important;
+  border-right: none !important;
   flex: 1;
 }
 .input-suffix {
   display: flex;
   align-items: center;
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-4);
   background: var(--color-bg);
   border: 1.5px solid var(--color-border);
-  border-left: none;
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
@@ -148,13 +157,13 @@
   font-weight: var(--font-weight-medium);
 }
 
-/* ── Checkbox / Radio Pill Group ── */
+/* ── Radio / Checkbox Pill Group — TPBank style ── */
 .checkbox-group,
 .radio-group {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--space-1);
+  margin-top: var(--space-2);
 }
 
 .checkbox-pill,
@@ -162,7 +171,6 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
 }
 
 .checkbox-pill input[type="checkbox"],
@@ -177,10 +185,10 @@
 .radio-pill label {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   font-size: var(--text-sm);
   font-weight: var(--font-weight-regular);
   color: var(--color-text-secondary);
@@ -189,14 +197,14 @@
   background: var(--color-surface);
   user-select: none;
   line-height: 1.4;
-  min-height: 32px;
+  min-height: 38px;
 }
 
 .checkbox-pill label:hover,
 .radio-pill label:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-primary-light);
   color: var(--color-primary);
-  background: var(--color-primary-light);
+  background: var(--color-primary-surface);
 }
 
 .checkbox-pill input:checked + label,
@@ -213,19 +221,41 @@
   outline-offset: 2px;
 }
 
-/* ── URL input ── */
-input[type="url"] {
-  font-family: var(--font-family);
+/* ── Section divider inside form ── */
+.form-section {
+  margin-bottom: var(--space-6);
+}
+.form-section-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-5);
+}
+.form-section-title::before {
+  content: '';
+  width: 3px;
+  height: 18px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
 }
 
-/* ── Collapsible Prompt Section (details/summary) ── */
+/* ── URL input ── */
+input[type="url"] { font-family: var(--font-family); }
+
+/* ── Collapsible Prompt Section ── */
 .collapsible-section {
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: var(--space-5);
+  background: var(--color-surface);
 }
-
 .collapsible-section summary {
   display: flex;
   align-items: center;
@@ -233,19 +263,17 @@ input[type="url"] {
   padding: var(--space-4) var(--space-5);
   cursor: pointer;
   user-select: none;
-  background: var(--color-bg);
+  background: var(--color-bg-alt);
   border-bottom: 1.5px solid transparent;
   list-style: none;
   transition: background var(--transition-fast);
 }
 .collapsible-section summary::-webkit-details-marker { display: none; }
 .collapsible-section summary::marker { display: none; }
-
-.collapsible-section summary:hover { background: var(--color-primary-light); }
-
+.collapsible-section summary:hover { background: var(--color-primary-surface); }
 .collapsible-section[open] summary {
   border-bottom-color: var(--color-border);
-  background: var(--color-primary-light);
+  background: var(--color-primary-surface);
 }
 
 .collapsible-title {
@@ -256,18 +284,16 @@ input[type="url"] {
 }
 .collapsible-hint {
   font-size: var(--text-xs);
-  color: var(--color-text-tertiary);
+  color: var(--color-text-muted);
 }
 .collapsible-chevron {
   font-size: var(--text-xs);
-  color: var(--color-text-secondary);
+  color: var(--color-primary);
   transition: transform var(--transition-fast);
   width: 16px;
   text-align: center;
 }
-.collapsible-section[open] .collapsible-chevron {
-  transform: rotate(180deg);
-}
+.collapsible-section[open] .collapsible-chevron { transform: rotate(180deg); }
 
 .collapsible-body {
   padding: var(--space-5);
@@ -275,6 +301,18 @@ input[type="url"] {
   flex-direction: column;
   gap: 0;
 }
-.collapsible-body .form-group:last-child {
-  margin-bottom: 0;
+.collapsible-body .form-group:last-child { margin-bottom: 0; }
+
+/* ── Edit mode banner ── */
+.edit-mode-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-primary-surface);
+  border-bottom: 1px solid var(--color-primary-light);
+  font-size: var(--text-sm);
+  color: var(--color-primary-dark);
 }
+.edit-mode-banner-icon { font-size: 1rem; }
+.edit-mode-banner-text { font-size: var(--text-sm); }

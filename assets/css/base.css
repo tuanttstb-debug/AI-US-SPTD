@@ -23,24 +23,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ensure all form controls inherit font */
 input, select, textarea, button {
   font-family: inherit;
-  font-size: var(--text-md); /* 16px prevents iOS auto-zoom */
+  font-size: var(--text-md);
   line-height: inherit;
 }
 
-/* Remove default button styles */
 button {
   cursor: pointer;
   border: none;
   background: none;
 }
 
-/* Remove default list styles */
 ul, ol { list-style: none; }
 
-/* Smooth focus transitions */
 :focus { outline: none; }
 :focus-visible {
   outline: 2px solid var(--color-primary);
@@ -48,13 +44,10 @@ ul, ol { list-style: none; }
   border-radius: var(--radius-sm);
 }
 
-/* Disabled state */
 [disabled], [disabled]:hover { cursor: not-allowed; opacity: 0.5; }
 
-/* Hidden utility */
 .hidden { display: none !important; }
 
-/* Screen reader only */
 .sr-only {
   position: absolute;
   width: 1px; height: 1px;

@@ -5,13 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="AI Use Case Platform — TT SPTD">
   <title>AI Use Case Platform — TT SPTD</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
-  <link rel="shortcut icon"    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237B2CBF' stroke-width='1.5'><path stroke-linecap='round' stroke-linejoin='round' d='M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z'/></svg>">
 
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/typography.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/states.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
@@ -19,86 +18,189 @@
 </head>
 <body>
 
-  <!-- Portal Header -->
-  <header class="portal-header" role="banner">
-    <div class="portal-brand" aria-label="Trang chủ AI Platform">
-      <span class="portal-brand-icon" aria-hidden="true">🚀</span>
-      <span class="portal-brand-name">Bình dân hóa AI</span>
-      <span class="portal-brand-sep" aria-hidden="true"></span>
-      <span class="portal-brand-sub">Platform</span>
-    </div>
-    <div class="portal-user-area" id="portalUserArea">
-      <div class="portal-user-chip" aria-label="Tài khoản đăng nhập">
-        <div class="portal-user-avatar" id="portalUserAvatar" aria-hidden="true"></div>
-        <span class="portal-user-name" id="portalUserDisplay"></span>
+  <div class="app-layout">
+
+    <!-- ── Left Sidebar ── -->
+    <aside class="app-sidebar" id="appSidebar" role="navigation" aria-label="Điều hướng chính">
+
+      <a href="index.html" class="sidebar-brand" aria-label="Trang chủ">
+        <div class="sidebar-brand-logo" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+          </svg>
+        </div>
+        <div class="sidebar-brand-text">
+          <span class="sidebar-brand-name">Bình dân hóa AI</span>
+          <span class="sidebar-brand-sub">TT SPTD</span>
+        </div>
+      </a>
+
+      <nav class="sidebar-nav" role="menubar">
+        <span class="sidebar-section-label">Quản lý</span>
+
+        <a href="dashboard.html" class="sidebar-nav-item" role="menuitem" id="navDashboard" style="display:none">
+          <i class="sidebar-nav-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+            </svg>
+          </i>
+          <span class="sidebar-nav-label">Dashboard</span>
+        </a>
+
+        <a href="register.html" class="sidebar-nav-item" role="menuitem">
+          <i class="sidebar-nav-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+            </svg>
+          </i>
+          <span class="sidebar-nav-label">Đăng ký Use Case</span>
+        </a>
+
+        <a href="dashboard.html?tab=my" class="sidebar-nav-item" role="menuitem">
+          <i class="sidebar-nav-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+            </svg>
+          </i>
+          <span class="sidebar-nav-label">Use Case của tôi</span>
+        </a>
+
+        <div class="sidebar-divider" aria-hidden="true"></div>
+        <span class="sidebar-section-label">Hệ thống</span>
+
+        <a href="index.html" class="sidebar-nav-item is-active" role="menuitem" aria-current="page">
+          <i class="sidebar-nav-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>
+          </i>
+          <span class="sidebar-nav-label">Trang chủ</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar" id="sidebarAvatar" aria-hidden="true"></div>
+          <div class="sidebar-user-info">
+            <span class="sidebar-user-name" id="sidebarUserName"></span>
+            <span class="sidebar-user-role" id="sidebarUserRole">Người dùng</span>
+          </div>
+          <button class="sidebar-logout-btn" id="sidebarLogoutBtn" title="Đăng xuất" aria-label="Đăng xuất">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+            </svg>
+          </button>
+        </div>
       </div>
-      <button class="portal-logout-btn" id="portalLogoutBtn" type="button">
-        Đăng xuất
-      </button>
-    </div>
-  </header>
 
-  <!-- Portal Body -->
-  <div class="portal-body-bg" id="portalBody" style="display:none">
-    <main class="portal-main" role="main">
+    </aside>
 
-      <h1 class="portal-page-title">Tất cả dịch vụ</h1>
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
 
-      <div class="service-sections" id="serviceSections" role="navigation" aria-label="Danh sách dịch vụ">
-        <!-- Sections injected by JS based on user role -->
+    <!-- ── Main Area ── -->
+    <div class="app-main">
+
+      <header class="app-topbar" role="banner">
+        <button class="topbar-sidebar-toggle" id="sidebarToggle" aria-label="Mở/đóng menu" aria-expanded="false" aria-controls="appSidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+        <h1 class="topbar-title">Trang chủ</h1>
+        <div class="topbar-actions">
+          <div class="topbar-user-chip" id="topbarUserChip" style="display:none">
+            <div class="topbar-user-avatar" id="topbarAvatar" aria-hidden="true"></div>
+            <span class="topbar-user-name" id="topbarUserName"></span>
+          </div>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <main class="portal-main" role="main" id="portalMain" style="display:none">
+
+          <h1 class="portal-page-title">Tất cả dịch vụ</h1>
+
+          <div class="service-sections" id="serviceSections" role="navigation" aria-label="Danh sách dịch vụ">
+            <!-- Sections injected by JS -->
+          </div>
+
+          <footer class="portal-footer">
+            AI Use Case Platform · TT SPTD · v3.0.0
+          </footer>
+        </main>
       </div>
 
-    </main>
+    </div><!-- /app-main -->
+  </div><!-- /app-layout -->
 
-    <footer class="portal-footer">
-      AI Use Case Platform · TT SPTD · v2.2.0
-    </footer>
-  </div>
-
-  <!-- Toast -->
   <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
 
-  <!-- Scripts -->
   <script src="config/env.js"></script>
   <script src="assets/js/auth.js"></script>
   <script>
     (function () {
       'use strict';
 
-      // ── Backward compat: redirect old ?edit= links to register.html ──
+      // Backward compat: redirect old ?edit= links to register.html
       var sp = new URLSearchParams(window.location.search);
       if (sp.has('edit')) {
         window.location.replace('register.html' + window.location.search);
         return;
       }
 
-      // ── Auth guard ──
       if (!AuthService.requireAuth()) return;
 
       var user = AuthService.getUser();
+      var role = user ? (user.role || 'user') : 'user';
+      var initials = ((user && (user.displayName || user.email)) || '?').charAt(0).toUpperCase();
 
-      // ── Service catalog (data-driven, role-aware) ─────────────────
-      // To add a new service: push to PORTAL_SERVICES.
-      // roles: ['user'] = all logged-in users, ['admin'] = admin only.
+      // Populate sidebar + topbar
+      function setEl(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+      setEl('sidebarAvatar',   initials);
+      setEl('sidebarUserName', user ? (user.displayName || user.email) : '');
+      setEl('sidebarUserRole', role === 'admin' ? 'Admin' : 'Người dùng');
+      setEl('topbarAvatar',    initials);
+      setEl('topbarUserName',  user ? (user.displayName || user.email) : '');
+      var chip = document.getElementById('topbarUserChip'); if (chip) chip.style.display = '';
+
+      // Show Dashboard nav for admin
+      if (role === 'admin') {
+        var navDash = document.getElementById('navDashboard'); if (navDash) navDash.style.display = '';
+      }
+
+      document.getElementById('sidebarLogoutBtn').addEventListener('click', function () {
+        AuthService.logout();
+        window.location.replace('login.html');
+      });
+
+      // Sidebar toggle
+      var sidebar = document.getElementById('appSidebar');
+      var overlay = document.getElementById('sidebarOverlay');
+      var toggle  = document.getElementById('sidebarToggle');
+      function openSidebar()  { sidebar.classList.add('is-open');    overlay.classList.add('is-visible');    toggle.setAttribute('aria-expanded','true'); }
+      function closeSidebar() { sidebar.classList.remove('is-open'); overlay.classList.remove('is-visible'); toggle.setAttribute('aria-expanded','false'); }
+      if (toggle)  toggle.addEventListener('click', function () { sidebar.classList.contains('is-open') ? closeSidebar() : openSidebar(); });
+      if (overlay) overlay.addEventListener('click', closeSidebar);
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSidebar(); });
+
+      // Service catalog (data-driven, role-aware)
       var PORTAL_SERVICES = [
         {
           sectionLabel: 'Đăng ký & Quản lý',
           items: [
             {
-              icon:  '🚀',
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>',
               label: 'Đăng ký AI Use Case',
               desc:  'Tạo mới và nộp use case AI cho team',
               href:  'register.html',
               roles: ['user', 'admin']
             },
             {
-              icon:     '📋',
-              label:    'Use case của tôi',
-              desc:     'Xem trạng thái và chỉnh sửa use case đã nộp',
-              href:     '#',
-              roles:    ['user', 'admin'],
-              badge:    'Sắp có',
-              disabled: true
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>',
+              label: 'Use case của tôi',
+              desc:  'Xem trạng thái và chỉnh sửa use case đã nộp',
+              href:  'dashboard.html?tab=my',
+              roles: ['user', 'admin']
             }
           ]
         },
@@ -106,7 +208,7 @@
           sectionLabel: 'Báo cáo & Phân tích',
           items: [
             {
-              icon:  '📊',
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" /></svg>',
               label: 'Dashboard tổng quan',
               desc:  'Thống kê, phân tích và duyệt use case',
               href:  'dashboard.html',
@@ -116,22 +218,7 @@
         }
       ];
 
-      // ── Render portal ─────────────────────────────────────────────
-      var displayEl  = document.getElementById('portalUserDisplay');
-      var avatarEl   = document.getElementById('portalUserAvatar');
       var sectionsEl = document.getElementById('serviceSections');
-      var role       = user.role || 'user';
-      var initials   = (user.displayName || user.email).charAt(0).toUpperCase();
-
-      if (displayEl) displayEl.textContent = user.displayName || user.email;
-      if (avatarEl)  avatarEl.textContent  = initials;
-
-      document.getElementById('portalLogoutBtn').addEventListener('click', function () {
-        AuthService.logout();
-        window.location.replace('login.html');
-      });
-
-      // ── Render service sections ───────────────────────────────────
       PORTAL_SERVICES.forEach(function (section) {
         var visibleItems = section.items.filter(function (item) {
           return item.roles.indexOf(role) !== -1;
@@ -151,57 +238,35 @@
         listEl.setAttribute('role', 'list');
 
         visibleItems.forEach(function (item) {
-          var tag = item.disabled ? 'div' : 'a';
-          var el  = document.createElement(tag);
-          el.className = 'service-item' + (item.disabled ? ' is-disabled' : '');
+          var el = document.createElement('a');
+          el.className = 'service-item';
+          el.href = item.href;
           el.setAttribute('role', 'listitem');
+          el.setAttribute('aria-label', item.label + (item.desc ? ' — ' + item.desc : ''));
 
-          if (!item.disabled) {
-            el.href = item.href;
-            el.setAttribute('aria-label', item.label + (item.desc ? ' — ' + item.desc : ''));
-          } else {
-            el.setAttribute('aria-disabled', 'true');
-          }
-
-          // Icon
           var iconEl = document.createElement('div');
           iconEl.className = 'service-item-icon';
           iconEl.setAttribute('aria-hidden', 'true');
-          iconEl.textContent = item.icon;
+          iconEl.innerHTML = item.icon;
 
-          // Content
           var contentEl = document.createElement('div');
           contentEl.className = 'service-item-content';
-
           var labelEl = document.createElement('p');
           labelEl.className = 'service-item-label';
           labelEl.textContent = item.label;
-
           var descEl = document.createElement('p');
           descEl.className = 'service-item-desc';
           descEl.textContent = item.desc;
-
           contentEl.appendChild(labelEl);
           contentEl.appendChild(descEl);
 
-          // Right
           var rightEl = document.createElement('div');
           rightEl.className = 'service-item-right';
-
-          if (item.badge) {
-            var badgeEl = document.createElement('span');
-            badgeEl.className = 'service-item-badge';
-            badgeEl.textContent = item.badge;
-            rightEl.appendChild(badgeEl);
-          }
-
-          if (!item.disabled) {
-            var chevron = document.createElement('i');
-            chevron.className = 'service-item-chevron';
-            chevron.setAttribute('aria-hidden', 'true');
-            chevron.textContent = '›';
-            rightEl.appendChild(chevron);
-          }
+          var chevron = document.createElement('i');
+          chevron.className = 'service-item-chevron';
+          chevron.setAttribute('aria-hidden', 'true');
+          chevron.textContent = '›';
+          rightEl.appendChild(chevron);
 
           el.appendChild(iconEl);
           el.appendChild(contentEl);
@@ -213,8 +278,7 @@
         sectionsEl.appendChild(sectionEl);
       });
 
-      // Show portal
-      document.getElementById('portalBody').style.display = '';
+      document.getElementById('portalMain').style.display = '';
     })();
   </script>
 

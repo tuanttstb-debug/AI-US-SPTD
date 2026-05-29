@@ -3,141 +3,220 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Đăng ký và quản lý AI Use Case nội bộ TT SPTD">
-  <title>Đăng ký AI Use Case — TT SPTD</title>
-  <!-- Inline favicon — prevents 404 on favicon.ico -->
-  <link rel="icon"           href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
-  <link rel="shortcut icon"  href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <meta name="description" content="AI Use Case Platform — TT SPTD">
+  <title>AI Use Case Platform — TT SPTD</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <link rel="shortcut icon"    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 
-  <!-- CSS (load order matters) -->
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/typography.css">
-  <link rel="stylesheet" href="assets/css/layout.css">
   <link rel="stylesheet" href="assets/css/components.css">
-  <link rel="stylesheet" href="assets/css/forms.css">
-  <link rel="stylesheet" href="assets/css/wizard.css">
   <link rel="stylesheet" href="assets/css/states.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="assets/css/portal.css">
 </head>
 <body>
 
-  <!-- App Header -->
-  <header class="app-header">
-    <div class="logo">🚀 Bình dân hóa AI</div>
-    <div class="header-divider"></div>
-    <div class="header-title">Đăng ký AI Use Case</div>
+  <!-- Portal Header -->
+  <header class="portal-header" role="banner">
+    <div class="portal-brand" aria-label="Trang chủ AI Platform">
+      <span class="portal-brand-icon" aria-hidden="true">🚀</span>
+      <span class="portal-brand-name">Bình dân hóa AI</span>
+      <span class="portal-brand-sep" aria-hidden="true"></span>
+      <span class="portal-brand-sub">Platform</span>
+    </div>
+    <div class="portal-user-area" id="portalUserArea">
+      <div class="portal-user-chip" aria-label="Tài khoản đăng nhập">
+        <div class="portal-user-avatar" id="portalUserAvatar" aria-hidden="true"></div>
+        <span class="portal-user-name" id="portalUserDisplay"></span>
+      </div>
+      <button class="portal-logout-btn" id="portalLogoutBtn" type="button">
+        Đăng xuất
+      </button>
+    </div>
   </header>
 
-  <main class="app-container">
+  <!-- Portal Body -->
+  <div class="portal-body-bg" id="portalBody" style="display:none">
+    <main class="portal-main" role="main">
 
-    <!-- Wizard Card -->
-    <div class="wizard" id="wizardCard">
+      <h1 class="portal-page-title">Tất cả dịch vụ</h1>
 
-      <!-- Progress Track (FIX: inner fill div, not ::after) -->
-      <div class="progress-track">
-        <div class="progress-fill" id="progressBar"></div>
+      <div class="service-sections" id="serviceSections" role="navigation" aria-label="Danh sách dịch vụ">
+        <!-- Sections injected by JS based on user role -->
       </div>
 
-      <!-- Draft Restore Banner (replaces browser confirm()) -->
-      <div id="draftBanner" class="draft-banner hidden" role="alert" aria-live="polite">
-        <div class="draft-banner-content">
-          <span style="font-size:1.2rem;">📝</span>
-          <div class="draft-banner-text">
-            <span class="draft-banner-title">Bạn có bản nháp chưa hoàn thành</span>
-            <span class="draft-banner-sub">Tiếp tục từ lần trước hay bắt đầu lại?</span>
-          </div>
-        </div>
-        <div class="draft-banner-actions">
-          <button id="draftRestoreBtn" class="btn btn-sm btn-primary">Tiếp tục</button>
-          <button id="draftDiscardBtn" class="btn btn-sm btn-ghost">Bỏ qua</button>
-        </div>
-      </div>
+    </main>
 
-      <!-- Edit Mode Banner -->
-      <div id="editModeBanner" class="edit-mode-banner hidden" role="status">
-        <span class="edit-mode-banner-icon">✏️</span>
-        <span class="edit-mode-banner-text">Đang chỉnh sửa use case — <strong id="editModeId"></strong></span>
-      </div>
+    <footer class="portal-footer">
+      AI Use Case Platform · TT SPTD · v2.2.0
+    </footer>
+  </div>
 
-      <!-- Step Indicators -->
-      <div class="step-indicators" id="stepIndicators" role="navigation" aria-label="Các bước điền form"></div>
+  <!-- Toast -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
 
-      <!-- Wizard Meta: counter + autosave -->
-      <div class="wizard-meta">
-        <span class="step-counter" id="stepCounter" aria-live="polite">Bước 1 / 4</span>
-        <span class="autosave-badge" id="autosaveBadge" aria-live="polite" aria-atomic="true"></span>
-      </div>
-
-      <!-- Form Steps (injected by wizard.js) -->
-      <div class="wizard-body">
-        <form id="useCaseForm" novalidate aria-label="Form đăng ký AI Use Case">
-          <!-- Steps injected dynamically by Wizard.renderSteps() -->
-        </form>
-      </div>
-
-      <!-- Success Screen (hidden by default, shown after submit) -->
-      <div id="successScreen" class="success-screen hidden" role="region" aria-label="Đăng ký thành công">
-        <div class="success-icon-wrap" aria-hidden="true">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-        </div>
-        <h2 class="success-title">Đăng ký thành công!</h2>
-        <div class="success-id-badge" id="successIdBadge">--</div>
-        <p class="success-desc">
-          Use case của bạn đã được ghi nhận.<br>
-          Team sẽ review và liên hệ qua email sớm nhất.
-        </p>
-        <div class="success-actions">
-          <button onclick="location.reload()" class="btn btn-primary">Đăng ký thêm</button>
-          <button onclick="window.close()" class="btn btn-outline">Đóng</button>
-        </div>
-      </div>
-
-      <!-- Wizard Navigation Footer -->
-      <div class="wizard-nav-wrapper" id="wizardNavWrapper">
-        <div class="wizard-nav-left">
-          <button type="button" id="prevBtn" class="btn btn-outline" disabled aria-label="Bước trước">
-            ← Trước
-          </button>
-        </div>
-        <div class="wizard-nav-right">
-          <button type="button" id="nextBtn" class="btn btn-primary" aria-label="Bước tiếp theo">
-            Tiếp →
-          </button>
-          <button type="button" id="submitBtn" class="btn btn-success" style="display:none;" aria-label="Gửi đăng ký">
-            Gửi đăng ký ✓
-          </button>
-        </div>
-      </div>
-
-    </div><!-- /wizard -->
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay hidden" role="status" aria-label="Đang tải">
-      <div class="spinner" aria-hidden="true"></div>
-      <span class="loading-label" id="loadingLabel">Đang tải...</span>
-    </div>
-
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
-
-  </main>
-
-  <!-- JS dependencies (ORDER MATTERS — each file uses globals from previous) -->
+  <!-- Scripts -->
   <script src="config/env.js"></script>
-  <script src="config/routes.js"></script>
-  <script src="assets/js/constants.js"></script>
-  <script src="assets/js/helpers.js"></script>
-  <script src="assets/js/storage.js"></script>
-  <script src="assets/js/api.js"></script>
-  <script src="assets/js/validation.js"></script>
-  <script src="assets/js/toast.js"></script>
-  <script src="assets/js/duplicate-check.js"></script>
-  <script src="assets/js/form-mapper.js"></script>
-  <script src="assets/js/wizard.js"></script>
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      // ── Backward compat: redirect old ?edit= links to register.html ──
+      var sp = new URLSearchParams(window.location.search);
+      if (sp.has('edit')) {
+        window.location.replace('register.html' + window.location.search);
+        return;
+      }
+
+      // ── Auth guard ──
+      if (!AuthService.requireAuth()) return;
+
+      var user = AuthService.getUser();
+
+      // ── Service catalog (data-driven, role-aware) ─────────────────
+      // To add a new service: push to PORTAL_SERVICES.
+      // roles: ['user'] = all logged-in users, ['admin'] = admin only.
+      var PORTAL_SERVICES = [
+        {
+          sectionLabel: 'Đăng ký & Quản lý',
+          items: [
+            {
+              icon:  '🚀',
+              label: 'Đăng ký AI Use Case',
+              desc:  'Tạo mới và nộp use case AI cho team',
+              href:  'register.html',
+              roles: ['user', 'admin']
+            },
+            {
+              icon:     '📋',
+              label:    'Use case của tôi',
+              desc:     'Xem trạng thái và chỉnh sửa use case đã nộp',
+              href:     '#',
+              roles:    ['user', 'admin'],
+              badge:    'Sắp có',
+              disabled: true
+            }
+          ]
+        },
+        {
+          sectionLabel: 'Báo cáo & Phân tích',
+          items: [
+            {
+              icon:  '📊',
+              label: 'Dashboard tổng quan',
+              desc:  'Thống kê, phân tích và duyệt use case',
+              href:  'dashboard.html',
+              roles: ['admin']
+            }
+          ]
+        }
+      ];
+
+      // ── Render portal ─────────────────────────────────────────────
+      var displayEl  = document.getElementById('portalUserDisplay');
+      var avatarEl   = document.getElementById('portalUserAvatar');
+      var sectionsEl = document.getElementById('serviceSections');
+      var role       = user.role || 'user';
+      var initials   = (user.displayName || user.email).charAt(0).toUpperCase();
+
+      if (displayEl) displayEl.textContent = user.displayName || user.email;
+      if (avatarEl)  avatarEl.textContent  = initials;
+
+      document.getElementById('portalLogoutBtn').addEventListener('click', function () {
+        AuthService.logout();
+        window.location.replace('login.html');
+      });
+
+      // ── Render service sections ───────────────────────────────────
+      PORTAL_SERVICES.forEach(function (section) {
+        var visibleItems = section.items.filter(function (item) {
+          return item.roles.indexOf(role) !== -1;
+        });
+        if (!visibleItems.length) return;
+
+        var sectionEl = document.createElement('div');
+        sectionEl.className = 'service-section';
+
+        var titleEl = document.createElement('h2');
+        titleEl.className = 'service-section-title';
+        titleEl.textContent = section.sectionLabel;
+        sectionEl.appendChild(titleEl);
+
+        var listEl = document.createElement('div');
+        listEl.className = 'service-list';
+        listEl.setAttribute('role', 'list');
+
+        visibleItems.forEach(function (item) {
+          var tag = item.disabled ? 'div' : 'a';
+          var el  = document.createElement(tag);
+          el.className = 'service-item' + (item.disabled ? ' is-disabled' : '');
+          el.setAttribute('role', 'listitem');
+
+          if (!item.disabled) {
+            el.href = item.href;
+            el.setAttribute('aria-label', item.label + (item.desc ? ' — ' + item.desc : ''));
+          } else {
+            el.setAttribute('aria-disabled', 'true');
+          }
+
+          // Icon
+          var iconEl = document.createElement('div');
+          iconEl.className = 'service-item-icon';
+          iconEl.setAttribute('aria-hidden', 'true');
+          iconEl.textContent = item.icon;
+
+          // Content
+          var contentEl = document.createElement('div');
+          contentEl.className = 'service-item-content';
+
+          var labelEl = document.createElement('p');
+          labelEl.className = 'service-item-label';
+          labelEl.textContent = item.label;
+
+          var descEl = document.createElement('p');
+          descEl.className = 'service-item-desc';
+          descEl.textContent = item.desc;
+
+          contentEl.appendChild(labelEl);
+          contentEl.appendChild(descEl);
+
+          // Right
+          var rightEl = document.createElement('div');
+          rightEl.className = 'service-item-right';
+
+          if (item.badge) {
+            var badgeEl = document.createElement('span');
+            badgeEl.className = 'service-item-badge';
+            badgeEl.textContent = item.badge;
+            rightEl.appendChild(badgeEl);
+          }
+
+          if (!item.disabled) {
+            var chevron = document.createElement('i');
+            chevron.className = 'service-item-chevron';
+            chevron.setAttribute('aria-hidden', 'true');
+            chevron.textContent = '›';
+            rightEl.appendChild(chevron);
+          }
+
+          el.appendChild(iconEl);
+          el.appendChild(contentEl);
+          el.appendChild(rightEl);
+          listEl.appendChild(el);
+        });
+
+        sectionEl.appendChild(listEl);
+        sectionsEl.appendChild(sectionEl);
+      });
+
+      // Show portal
+      document.getElementById('portalBody').style.display = '';
+    })();
+  </script>
+
 </body>
 </html>

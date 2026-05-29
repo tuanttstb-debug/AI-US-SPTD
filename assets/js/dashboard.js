@@ -210,8 +210,8 @@
       var userName  = (_user ? (_user.displayName || _user.email || '') : '').toLowerCase().trim();
       var userEmail = (_user ? (_user.email || '') : '').toLowerCase().trim();
       _myList = all.filter(function (uc) {
-        var n = (uc.owner_name  || '').toLowerCase().trim();
-        var e = (uc.owner_email || '').toLowerCase().trim();
+        var n = String(uc.owner_name  == null ? '' : uc.owner_name).toLowerCase().trim();
+        var e = String(uc.owner_email == null ? '' : uc.owner_email).toLowerCase().trim();
         return n === userName
             || n === userEmail
             || e === userEmail
@@ -662,10 +662,10 @@
       var q = input.value.trim().toLowerCase();
       if (!q) { renderAllTable(_allList); return; }
       renderAllTable(_allList.filter(function (uc) {
-        return (uc.name        || '').toLowerCase().includes(q)
-            || (uc.owner_name  || '').toLowerCase().includes(q)
-            || (uc.team        || '').toLowerCase().includes(q)
-            || (uc.usecase_id  || '').toLowerCase().includes(q);
+        return String(uc.name       == null ? '' : uc.name).toLowerCase().includes(q)
+            || String(uc.owner_name == null ? '' : uc.owner_name).toLowerCase().includes(q)
+            || (uc.team       || '').toLowerCase().includes(q)
+            || (uc.usecase_id || '').toLowerCase().includes(q);
       }));
     }, 300));
   }

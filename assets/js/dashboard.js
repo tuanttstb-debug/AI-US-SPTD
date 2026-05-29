@@ -207,11 +207,15 @@
     showLoading(true);
     try {
       var all = (await Api.listUseCases({ limit: 200 })) || [];
-      var userName  = _user ? (_user.displayName || '').toLowerCase() : '';
-      var userEmail = _user ? (_user.email || '').toLowerCase() : '';
+      var userName  = (_user ? (_user.displayName || _user.email || '') : '').toLowerCase().trim();
+      var userEmail = (_user ? (_user.email || '') : '').toLowerCase().trim();
       _myList = all.filter(function (uc) {
-        return (uc.owner_name  || '').toLowerCase() === userName
-            || (uc.owner_email || '').toLowerCase() === userEmail;
+        var n = (uc.owner_name  || '').toLowerCase().trim();
+        var e = (uc.owner_email || '').toLowerCase().trim();
+        return n === userName
+            || n === userEmail
+            || e === userEmail
+            || e === userName;
       });
       renderMyTable(_myList);
     } catch (err) {

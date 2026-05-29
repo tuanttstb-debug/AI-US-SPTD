@@ -22,13 +22,14 @@ var AuthService = (function () {
     return adminList.indexOf(email.toLowerCase().trim()) !== -1 ? 'admin' : 'user';
   }
 
-  // Build display name from email local-part
-  function _buildDisplayName(email) {
-    return email.split('@')[0]
+  // Build display name from username (or email local-part)
+  function _buildDisplayName(username) {
+    var base = username.includes('@') ? username.split('@')[0] : username;
+    return base
       .split(/[._-]/)
       .map(function (s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; })
       .join(' ')
-      .trim() || email;
+      .trim() || username;
   }
 
   // ── Storage helpers ──────────────────────────────────────────────
@@ -61,18 +62,15 @@ var AuthService = (function () {
      * Returns { success: true, user } or { success: false, error: string }
      * To extend: add real provider call here, keep return contract identical.
      */
-    login: function (email) {
-      var emailTrimmed = String(email || '').trim();
-      if (!emailTrimmed) {
-        return { success: false, error: 'Vui lòng nhập email công việc' };
-      }
-      if (!/^\S+@\S+\.\S+$/.test(emailTrimmed)) {
-        return { success: false, error: 'Email không đúng định dạng (VD: ten.ho@company.com)' };
+    login: function (username) {
+      var uname = String(username || '').trim();
+      if (!uname) {
+        return { success: false, error: 'Vui lòng nhập tên đăng nhập' };
       }
       var user = {
-        email:       emailTrimmed,
-        displayName: _buildDisplayName(emailTrimmed),
-        role:        _resolveRole(emailTrimmed),
+        email:       uname,
+        displayName: _buildDisplayName(uname),
+        role:        _resolveRole(uname),
         loginAt:     new Date().toISOString()
       };
       _save(user);

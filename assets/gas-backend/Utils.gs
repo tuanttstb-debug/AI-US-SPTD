@@ -1,101 +1,299 @@
-// Utils.gs
-function createResponse_(success, message, data, error) {
-  return {
+// ─────────────────────────────────────────────────────────────────
+// Utils.gs — Các hàm tiện ích dùng chung toàn project
+// ─────────────────────────────────────────────────────────────────
+
+// ── Response Helpers ──────────────────────────────────────────────
+
+/**
+ * Tạo object response chuẩn.
+ * @param {boolean} success
+ * @param {string}  message
+ * @param {*}       data
+ * @param {string}  [errorDetail] - Stack trace hoặc thông tin debug (chỉ dùng nội bộ)
+ */
+function createResponse_(success, message, data, errorDetail) {
+  var response = {
     success: success,
     message: message || '',
-    data: data || null,
-    error: error || null
+    data:    data    || null
   };
-}
-
-function sendJson_(response) {
-  const output = ContentService.createTextOutput(JSON.stringify(response))
-    .setMimeType(ContentService.MimeType.JSON);
-  // CORS headers
-  output.addHeader('Access-Control-Allow-Origin', '*');
-  output.addHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
-  output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
-  return output;
-}
-
-function getOrCreateSheet_(sheetName) {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  let sheet = ss.getSheetByName(sheetName);
-  if (!sheet) {
-    sheet = ss.insertSheet(sheetName);
-    if (sheetName === SHEETS.MASTER) {
-      sheet.appendRow(HEADERS);
-    }
-    if (sheetName === SHEETS.LOOKUP) {
-      sheet.appendRow(['Field', 'Value']);
-    }
-    if (sheetName === SHEETS.ACTIVITY) {
-      sheet.appendRow(['Record_ID', 'UseCase_ID', 'Timestamp', 'Action', 'Details', 'User_Email']);
-    }
-    if (sheetName === SHEETS.CONFIG) {
-      sheet.appendRow(['Key', 'Value']);
-      sheet.appendRow(['NEXT_ID', '1']);
-    }
+  // Chỉ expose error detail khi không thành công (để debug)
+  if (!success && errorDetail) {
+    response.error = String(errorDetail);
   }
+  return response;
+}
+
+/**
+ * Serialize response thành JSON.
+ * Lưu ý: GAS ContentService không hỗ trợ custom headers (addHeader không tồn tại).
+ * CORS được xử lý bởi Google infrastructure — không cần set thủ công.
+ * Dùng cho direct browser access / doPost fallback (không qua JSONP).
+ */
+function sendJson_(response) {
+  return ContentService
+    .createTextOutput(JSON.stringify(response))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Serialize response dạng JSONP: callback({...})
+ * Dùng cho GET request — frontend inject <script> tag để bypass CORS redirect.
+ * @param {Object} response  - createResponse_() output
+ * @param {string} callback  - Tên hàm callback (đã validate là safe identifier)
+ */
+function sendJsonP_(response, callback) {
+  var json = JSON.stringify(response);
+  var body = callback + '(' + json + ');';
+  return ContentService
+    .createTextOutput(body)
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+// ── Spreadsheet Helpers ───────────────────────────────────────────
+
+/**
+ * Mở spreadsheet (không cache — GAS tự cache nội bộ).
+ */
+function getSpreadsheet_() {
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
+/**
+ * Lấy sheet theo tên, tạo mới nếu chưa tồn tại và tự động tạo headers.
+ * @param {string} sheetName
+ * @returns {GoogleAppsScript.Spreadsheet.Sheet}
+ */
+function getOrCreateSheet_(sheetName) {
+  var ss    = getSpreadsheet_();
+  var sheet = ss.getSheetByName(sheetName);
+  if (sheet) return sheet;
+
+  sheet = ss.insertSheet(sheetName);
+
+  switch (sheetName) {
+    case SHEETS.MASTER:
+      sheet.appendRow(HEADERS);
+      formatHeaderRow_(sheet);
+      break;
+    case SHEETS.LOOKUP:
+      sheet.appendRow(['Field', 'Value', 'Sort_Order', 'Active']);
+      formatHeaderRow_(sheet);
+      break;
+    case SHEETS.ACTIVITY:
+      sheet.appendRow(ACTIVITY_HEADERS);
+      formatHeaderRow_(sheet);
+      break;
+    case SHEETS.DASHBOARD:
+      sheet.appendRow(DASHBOARD_HEADERS);
+      formatHeaderRow_(sheet);
+      break;
+    case SHEETS.CONFIG:
+      sheet.appendRow(['Key', 'Value', 'Description']);
+      sheet.appendRow(['NEXT_ID', String(CONFIG_DEFAULTS.NEXT_ID), 'Auto-increment ID counter']);
+      formatHeaderRow_(sheet);
+      break;
+  }
+
   return sheet;
 }
 
-function readSheetAsObjects_(sheetName) {
-  const sheet = getOrCreateSheet_(sheetName);
-  const data = sheet.getDataRange().getValues();
-  if (data.length === 0) return [];
-  const headers = data[0];
-  return data.slice(1).map(row => {
-    const obj = {};
-    headers.forEach((h, i) => { obj[h] = row[i] !== undefined ? row[i] : ''; });
-    return obj;
-  });
+/**
+ * Format hàng header: bold, freeze, background.
+ */
+function formatHeaderRow_(sheet) {
+  try {
+    var headerRange = sheet.getRange(1, 1, 1, sheet.getLastColumn());
+    headerRange.setFontWeight('bold')
+               .setBackground('#e8f0fe')
+               .setWrap(true);
+    sheet.setFrozenRows(1);
+  } catch (e) { /* bỏ qua lỗi format */ }
 }
 
+/**
+ * Đọc toàn bộ sheet và trả về mảng object (key = header, value = cell value).
+ * Bỏ qua các hàng rỗng hoàn toàn.
+ * @param {string} sheetName
+ * @returns {Object[]}
+ */
+function readSheetAsObjects_(sheetName) {
+  var sheet = getOrCreateSheet_(sheetName);
+  var data  = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+
+  var headers = data[0].map(String);
+
+  return data.slice(1)
+    .filter(function(row) {
+      // Bỏ qua hàng hoàn toàn rỗng
+      return row.some(function(cell) {
+        return cell !== '' && cell !== null && cell !== undefined;
+      });
+    })
+    .map(function(row) {
+      var obj = {};
+      headers.forEach(function(h, i) {
+        obj[h] = (row[i] !== undefined && row[i] !== null) ? row[i] : '';
+      });
+      return obj;
+    });
+}
+
+/**
+ * Thêm hàng mới vào sheet dựa theo object (key = header).
+ * Thứ tự cột theo headers của sheet, không theo thứ tự object.
+ */
 function appendRowFromObject_(sheetName, obj) {
-  const sheet = getOrCreateSheet_(sheetName);
-  const data = sheet.getDataRange().getValues();
-  const headers = data.length > 0 ? data[0] : [];
-  if (headers.length === 0) throw new Error('Sheet has no headers');
-  const row = headers.map(h => (obj[h] !== undefined ? obj[h] : ''));
+  var sheet = getOrCreateSheet_(sheetName);
+  var data  = sheet.getDataRange().getValues();
+  if (data.length === 0) throw new Error('Sheet ' + sheetName + ' không có headers');
+
+  var headers = data[0].map(String);
+  var row = headers.map(function(h) {
+    return obj[h] !== undefined && obj[h] !== null ? obj[h] : '';
+  });
   sheet.appendRow(row);
 }
 
+/**
+ * Cập nhật hàng trong sheet MASTER dựa theo Record_ID.
+ * Ghi toàn bộ hàng (không partial update) để tránh cell drift.
+ */
 function updateRowByRecordId_(sheetName, recordId, obj) {
-  const sheet = getOrCreateSheet_(sheetName);
-  const data = sheet.getDataRange().getValues();
-  if (data.length < 2) throw new Error('No data rows');
-  const headers = data[0];
-  const recordCol = headers.indexOf('Record_ID');
-  if (recordCol === -1) throw new Error('Record_ID column not found');
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][recordCol] == recordId) {
-      const row = headers.map((h, j) => (obj[h] !== undefined ? obj[h] : data[i][j]));
+  var sheet = getOrCreateSheet_(sheetName);
+  var data  = sheet.getDataRange().getValues();
+  if (data.length < 2) throw new Error('Sheet ' + sheetName + ' không có dữ liệu');
+
+  var headers   = data[0].map(String);
+  var recordCol = headers.indexOf('Record_ID');
+  if (recordCol === -1) throw new Error('Cột Record_ID không tìm thấy trong sheet ' + sheetName);
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][recordCol]) === String(recordId)) {
+      var row = headers.map(function(h, j) {
+        return (obj[h] !== undefined && obj[h] !== null) ? obj[h] : data[i][j];
+      });
       sheet.getRange(i + 1, 1, 1, headers.length).setValues([row]);
-      return;
+      return true;
     }
   }
-  throw new Error(`Record_ID ${recordId} not found`);
+  throw new Error('Không tìm thấy Record_ID: ' + recordId);
 }
 
+/**
+ * Tìm object đầu tiên trong sheet theo field = value.
+ * @returns {Object|null}
+ */
 function findObjectByField_(sheetName, field, value) {
-  const objects = readSheetAsObjects_(sheetName);
-  return objects.find(o => o[field] == value) || null;
+  var objects = readSheetAsObjects_(sheetName);
+  for (var i = 0; i < objects.length; i++) {
+    if (String(objects[i][field]) === String(value)) return objects[i];
+  }
+  return null;
 }
 
-// Simple string similarity (Dice coefficient)
+// ── String & Math Utilities ───────────────────────────────────────
+
+/**
+ * Normalize chuỗi để so sánh similarity:
+ * lowercase, giữ ký tự Latin + tiếng Việt + số, bỏ ký tự đặc biệt.
+ */
+function normalizeStr_(s) {
+  if (!s) return '';
+  return String(s)
+    .toLowerCase()
+    .replace(/[^a-z0-9àáâãèéêìíòóôõùúýăđơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Dice Coefficient similarity sử dụng multiset bigrams (FIX: dùng Map thay Set).
+ * Set-based implementation cũ mất các bigram trùng lặp → kết quả sai với text ngắn.
+ * @param {string} str1
+ * @param {string} str2
+ * @returns {number} 0.0 – 1.0
+ */
 function diceSimilarity_(str1, str2) {
-  if (!str1 || !str2) return 0;
-  str1 = String(str1).toLowerCase().replace(/[^a-z0-9à-ỹ]/g, '');
-  str2 = String(str2).toLowerCase().replace(/[^a-z0-9à-ỹ]/g, '');
-  if (!str1 || !str2) return 0;
-  const bigram = s => {
-    const bg = new Set();
-    for (let i = 0; i < s.length - 1; i++) bg.add(s.substring(i, i + 2));
-    return bg;
-  };
-  const a = bigram(str1);
-  const b = bigram(str2);
-  const intersection = new Set([...a].filter(x => b.has(x)));
-  return (2 * intersection.size) / (a.size + b.size);
+  str1 = normalizeStr_(str1);
+  str2 = normalizeStr_(str2);
+  if (!str1 || !str2)         return 0;
+  if (str1 === str2)           return 1;
+  if (str1.length < 2 || str2.length < 2) return 0;
+
+  // Đếm bigrams với Map để giữ số lần xuất hiện
+  function makeBigrams(s) {
+    var map = {};
+    for (var i = 0; i < s.length - 1; i++) {
+      var bg = s.substring(i, i + 2);
+      map[bg] = (map[bg] || 0) + 1;
+    }
+    return map;
+  }
+
+  var a = makeBigrams(str1);
+  var b = makeBigrams(str2);
+
+  var intersection = 0;
+  Object.keys(a).forEach(function(bg) {
+    if (b[bg]) intersection += Math.min(a[bg], b[bg]);
+  });
+
+  var totalA = Object.values(a).reduce(function(s, v) { return s + v; }, 0);
+  var totalB = Object.values(b).reduce(function(s, v) { return s + v; }, 0);
+
+  return (2 * intersection) / (totalA + totalB);
+}
+
+/**
+ * Parse float an toàn — trả về 0 thay vì NaN.
+ */
+function safeNum_(val) {
+  var n = parseFloat(String(val).replace(/[^\d.-]/g, ''));
+  return isNaN(n) || n < 0 ? 0 : n;
+}
+
+/**
+ * Tính % tiết kiệm thời gian từ Before/After time.
+ * @returns {string} e.g. "50 phút (83.3%)" hoặc ''
+ */
+function computeTimeSaving_(beforeMin, afterMin) {
+  var b = safeNum_(beforeMin);
+  var a = safeNum_(afterMin);
+  if (b <= 0) return '';
+  var saving = b - a;
+  if (saving <= 0) return '0 phút (0%)';
+  var pct = ((saving / b) * 100).toFixed(1);
+  return saving + ' phút (' + pct + '%)';
+}
+
+/**
+ * Ước tính giờ tiết kiệm mỗi tháng (giả sử task chạy 1 lần/ngày làm việc).
+ * @returns {number} số giờ/tháng, làm tròn 2 chữ số thập phân
+ */
+function computeHoursSavedMonth_(beforeMin, afterMin) {
+  var b = safeNum_(beforeMin);
+  var a = safeNum_(afterMin);
+  if (b <= 0) return 0;
+  var savingMin = Math.max(0, b - a);
+  return Math.round((savingMin / 60) * WORKING_DAYS_PER_MONTH * 100) / 100;
+}
+
+/**
+ * Sanitize string đầu vào: trim, giới hạn độ dài.
+ */
+function sanitizeStr_(val, maxLen) {
+  if (val === null || val === undefined) return '';
+  var s = String(val).trim();
+  if (maxLen && s.length > maxLen) s = s.substring(0, maxLen);
+  return s;
+}
+
+/**
+ * Kiểm tra URL hợp lệ (bắt đầu bằng http:// hoặc https://).
+ */
+function isValidUrl_(url) {
+  if (!url) return true; // optional field
+  return /^https?:\/\/.+\..+/.test(String(url).trim());
 }
